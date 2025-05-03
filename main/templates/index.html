@@ -3,16 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multi-App Flask Site</title>
+    <title>Content Apps Hub</title>
     <link rel="stylesheet" href="{{ url_for('main.static', filename='main.css') }}">
 </head>
 <body>
     <div class="container">
-        <h1>Welcome to the Multi-App Flask Site</h1>
+        <h1>Welcome to the Content Apps Hub</h1>
         <div class="app-links">
             <a href="{{ url_for('main.index') }}">Home</a>
-            <a href="{{ url_for('app1.index') }}">App 1</a>
-            <a href="{{ url_for('app2.index') }}">App 2</a>
+            <a href="{{ url_for('content_plan.index') }}">Content Plan</a>
+            <a href="{{ url_for('content_gaps.index') }}">Content Gaps</a>
+            <a href="{{ url_for('topic_competitors.index') }}">Topic Competitors</a>
         </div>
     </div>
 </body>
