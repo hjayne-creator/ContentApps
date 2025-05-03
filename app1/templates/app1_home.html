@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App 1</title>
+    <link rel="stylesheet" href="{{ url_for('app1.static', filename='app1.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to App 1</h1>
+        <p>This is the first application in our multi-app Flask site.</p>
+        <div class="nav-links">
+            <a href="{{ url_for('main.index') }}">Back to Home</a>
+        </div>
+    </div>
+</body>
+</html>
