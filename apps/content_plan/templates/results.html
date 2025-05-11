@@ -1,0 +1,323 @@
+{% extends 'base.html' %}
+
+{% block title %}Content Plan Results{% endblock %}
+
+{% block head %}
+<!-- Add Markdown parser for rendering the content plan -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<!-- Add highlight.js for code highlighting if needed -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Configure marked options
+        marked.setOptions({
+            breaks: true,
+            gfm: true,
+            headerIds: true,
+            highlight: function(code, lang) {
+                if (lang && hljs.getLanguage(lang)) {
+                    return hljs.highlight(code, { language: lang }).value;
+                }
+                return hljs.highlightAuto(code).value;
+            }
+        });
+        
+        // Parse markdown content
+        const contentPlan = document.getElementById('content-plan');
+        if (contentPlan) {
+            const rawContent = contentPlan.textContent;
+            contentPlan.innerHTML = marked.parse(rawContent);
+            
+            // Add section classes for styling
+            const sections = contentPlan.querySelectorAll('h1, h2');
+            sections.forEach(section => {
+                // Add a special class to each section
+                if (section.tagName === 'H1') {
+                    section.classList.add('content-plan-title');
+                    
+                    // Add a decorative element after the title
+                    const decorator = document.createElement('div');
+                    decorator.className = 'title-decorator';
+                    section.after(decorator);
+                } else if (section.tagName === 'H2') {
+                    section.classList.add('content-section-title');
+                    
+                    // Create a container for the section
+                    const nextSection = findNextSection(section);
+                    const sectionContent = document.createElement('div');
+                    sectionContent.className = 'content-section';
+                    
+                    // Move all elements between this section and the next one into the container
+                    let currentNode = section.nextElementSibling;
+                    const nodesToMove = [];
+                    
+                    while (currentNode && currentNode !== nextSection) {
+                        nodesToMove.push(currentNode);
+                        currentNode = currentNode.nextElementSibling;
+                    }
+                    
+                    // Insert the container after the section title
+                    section.after(sectionContent);
+                    
+                    // Move all collected nodes into the container
+                    nodesToMove.forEach(node => sectionContent.appendChild(node));
+                }
+            });
+            
+            // Add styling to lists
+            contentPlan.querySelectorAll('ul, ol').forEach(list => {
+                list.classList.add('styled-list');
+            });
+        }
+        
+        // Helper function to find the next section heading
+        function findNextSection(element) {
+            let next = element.nextElementSibling;
+            while (next) {
+                if (next.tagName === 'H1' || next.tagName === 'H2') {
+                    return next;
+                }
+                next = next.nextElementSibling;
+            }
+            return null;
+        }
+    });
+</script>
+<style>
+    /* Advanced styles for rendered markdown */
+    .markdown-content {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+    }
+    
+    .content-plan-title {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #2563EB;
+        text-align: center;
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
+    
+    .title-decorator {
+        height: 4px;
+        background: linear-gradient(90deg, #2563EB 0%, #60A5FA 100%);
+        margin: 0.5rem auto 2rem auto;
+        width: 80px;
+        border-radius: 2px;
+    }
+    
+    .content-section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1F2937;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #E5E7EB;
+    }
+    
+    .content-section {
+        background-color: #F9FAFB;
+        border-left: 4px solid #60A5FA;
+        padding: 1rem 1.5rem;
+        margin-bottom: 2rem;
+        border-radius: 0 0.375rem 0.375rem 0;
+    }
+    
+    .markdown-content h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #374151;
+        margin-top: 1.5rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .markdown-content h4 {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #4B5563;
+        margin-top: 1.25rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .markdown-content p {
+        margin-bottom: 1rem;
+    }
+    
+    .markdown-content ul.styled-list {
+        list-style-type: disc;
+        margin-left: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .markdown-content ol.styled-list {
+        list-style-type: decimal;
+        margin-left: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .markdown-content ul.styled-list li,
+    .markdown-content ol.styled-list li {
+        margin-bottom: 0.5rem;
+    }
+    
+    .markdown-content blockquote {
+        border-left: 4px solid #D1D5DB;
+        padding: 0.5rem 1rem;
+        margin: 1rem 0;
+        background-color: #F3F4F6;
+        font-style: italic;
+    }
+    
+    .markdown-content code {
+        background-color: #F3F4F6;
+        padding: 0.2rem 0.4rem;
+        border-radius: 0.25rem;
+        font-family: Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        font-size: 0.875rem;
+    }
+    
+    .markdown-content pre {
+        background-color: #F3F4F6;
+        padding: 1rem;
+        border-radius: 0.375rem;
+        overflow-x: auto;
+        margin: 1rem 0;
+    }
+    
+    .markdown-content pre code {
+        background-color: transparent;
+        padding: 0;
+        border-radius: 0;
+        font-size: 0.875rem;
+    }
+    
+    /* Special styling for specific sections */
+    .content-section:contains(h3:contains("Pillar")) {
+        background-color: #EFF6FF;
+        border-left-color: #3B82F6;
+    }
+    
+    .content-section:contains(h3:contains("Implementation")) {
+        background-color: #ECFDF5;
+        border-left-color: #10B981;
+    }
+    
+    .content-section:contains(h3:contains("Next Steps")) {
+        background-color: #FEF3C7;
+        border-left-color: #F59E0B;
+    }
+    
+    /* Responsive print styles */
+    @media print {
+        .markdown-content {
+            font-size: 12pt;
+        }
+        
+        .content-section {
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+        
+        .content-plan-title {
+            font-size: 24pt;
+        }
+        
+        .content-section-title {
+            font-size: 18pt;
+            break-after: avoid;
+            page-break-after: avoid;
+        }
+        
+        .markdown-content h3 {
+            font-size: 16pt;
+            break-after: avoid;
+            page-break-after: avoid;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto">
+    <h1 class="text-3xl font-bold mb-6 text-center">Your Content Plan is Ready</h1>
+    
+    <div class="flex mb-4 justify-end space-x-2">
+        <button onclick="window.print()" class="btn-secondary flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+            </svg>
+            Print / Save PDF
+        </button>
+        
+        <a href="{{ url_for('index') }}" class="btn-primary flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            Create New Plan
+        </a>
+    </div>
+    
+    <div class="card mb-6">
+        <div class="flex justify-between mb-6">
+            <div>
+                <h2 class="text-xl font-semibold">Content Plan Summary</h2>
+                <p class="text-sm text-gray-600">Completed on: {{ job.completed_at|default('N/A') }}</p>
+            </div>
+        </div>
+        
+        <!-- Summary Section -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div class="bg-gray-50 p-4 rounded border">
+                <h3 class="font-bold text-lg mb-2">Website Analyzed</h3>
+                <p class="truncate">{{ job.website_url }}</p>
+                <p class="text-sm text-gray-600">{{ job.website_content_length|default(0) }} characters analyzed</p>
+            </div>
+            
+            <div class="bg-gray-50 p-4 rounded border">
+                <h3 class="font-bold text-lg mb-2">Keywords Researched</h3>
+                <div class="flex flex-wrap gap-1">
+                    {% for keyword in job.keywords %}
+                        <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">{{ keyword }}</span>
+                    {% endfor %}
+                </div>
+                <p class="text-sm text-gray-600 mt-1">{{ job.search_results_count|default(0) }} search results analyzed</p>
+            </div>
+        </div>
+        
+        <!-- Selected Theme -->
+        <div class="bg-blue-50 p-4 rounded border mb-6">
+            <h3 class="font-bold text-lg mb-2">Selected Theme</h3>
+            {% for theme in job.themes %}
+                {% if theme.is_selected %}
+                    <p class="font-medium text-blue-800">{{ theme.title }}</p>
+                    {% if theme.description %}
+                        <p class="text-sm text-gray-700 mt-1">{{ theme.description }}</p>
+                    {% endif %}
+                {% endif %}
+            {% else %}
+                <p class="italic text-gray-600">No theme selected</p>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Content Plan -->
+    <div class="card">
+        <id id="content-plan" class="markdown-content">{{ job.final_plan|default('Content plan not available') }}</div>
+    </div>
+    
+    <!-- Download Section -->
+    <div class="mt-6 text-center">
+        <button onclick="window.print()" class="btn-primary flex items-center mx-auto">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+            </svg>
+            Save as PDF
+        </button>
+    </div>
+</div>
+{% endblock %}
