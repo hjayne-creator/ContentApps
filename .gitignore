@@ -1,0 +1,50 @@
+# Python/Flask standard ignores
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+*.egg
+*.log
+*.sqlite3
+*.db
+instance/
+.env
+.env.*
+.DS_Store
+*.swp
+*.bak
+*.tmp
+
+# Ignore migration cache and compiled files
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+
+# Ignore virtual environments
+venv/
+ENV/
+env/
+.venv/
+
+# Ignore editor/project files
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Ignore files starting with z_ (case-insensitive)
+**/[zZ]_*
+
+# Ignore .env files
+.env
+.env.*
+
+# Ignore local config
+config.py
+
+# Ignore OS files
+.DS_Store
+Thumbs.db 
