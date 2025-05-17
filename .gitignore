@@ -42,9 +42,6 @@ env/
 .env
 .env.*
 
-# Ignore local config
-config.py
-
 # Ignore OS files
 .DS_Store
 Thumbs.db 
