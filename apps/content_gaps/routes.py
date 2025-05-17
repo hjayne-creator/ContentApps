@@ -7,4 +7,4 @@ content_gaps_bp = Blueprint('content_gaps', __name__,
 
 @content_gaps_bp.route('/')
 def index():
-    return render_template('content_gaps_home.html')
+    return render_template('content_gaps_index.html')

@@ -9,22 +9,14 @@
 {% block content %}
 <div class="container max-w-4xl mx-auto p-6">
     <header class="mb-10 text-center">
-        <h1 class="text-4xl font-bold text-indigo-700 mb-3">Topic Competitors</h1>
+        <h1 class="text-4xl font-bold text-primary-700 mb-6 text-center">Topic Competitors</h1>
         <p class="text-xl text-gray-600">Identify top SEO competitors on any topic</p>
     </header>
     
     <div class="bg-white rounded-lg shadow-lg p-8">
         <div class="mb-6">
             <h2 class="text-2xl font-semibold text-gray-800 mb-4">Start Your Research</h2>
-            <p class="text-gray-600 mb-6">
-                Enter a main topic to discover:
-            </p>
-            <ul class="list-disc list-inside text-gray-600 space-y-2 mb-6">
-                <li>Subtopics and keywords</li>
-                <li>Top competitors publishing content</li>
-                <li>Top keywords and search volume </li>
-                <li>Sites with editorial content</li>
-            </ul>
+           
         </div>
         
         <form action="/apps/topic-competitors/results" method="POST" class="space-y-6">

@@ -3,7 +3,7 @@ from apps.content_plan.config import get_config
 from flask_wtf.csrf import CSRFProtect
 
 def create_app():
-    app = Flask(__name__)
+    app = Flask(__name__, static_folder='apps/static')
     
     # Initialize CSRF protection
     csrf = CSRFProtect()
