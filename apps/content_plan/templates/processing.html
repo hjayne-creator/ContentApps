@@ -1,0 +1,440 @@
+{% extends "base.html" %}
+
+{% block title %}Processing ContentApps Plan{% endblock %}
+
+{% block head %}
+<style>
+    .progress-container {
+        width: 100%;
+        background-color: #EFF6FF;
+        border-radius: 0.5rem;
+        overflow: hidden;
+    }
+    .progress-bar {
+        height: 16px;
+        background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+        transition: width 0.3s ease;
+    }
+    .loading-spinner {
+        border: 4px solid rgba(219, 234, 254, 0.3);
+        border-radius: 50%;
+        border-top: 4px solid #3B82F6;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    .theme-card {
+        border: 2px solid #E5E7EB;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .theme-card:hover {
+        border-color: #3B82F6;
+        transform: translateY(-2px);
+    }
+    .theme-card.selected {
+        border-color: #3B82F6;
+        background-color: #EFF6FF;
+    }
+    .theme-card.processing {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+    .theme-title {
+        font-weight: 600;
+        color: #1F2937;
+        margin-bottom: 0.5rem;
+    }
+    .theme-description {
+        color: #4B5563;
+        font-size: 0.875rem;
+    }
+    .theme-selection-container {
+        display: none;
+        margin-top: 2rem;
+    }
+    .theme-selection-container.visible {
+        display: block;
+    }
+    .theme-form {
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <header class="text-center mb-12">
+        <h1 class="text-3xl font-bold text-secondary-800 mb-3">Creating Your ContentApps Plan</h1>
+        <p class="text-lg text-secondary-600">Please wait while we research and generate your content plan</p>
+    </header>
+    
+    <div class="card p-8">
+        <div class="mb-8 text-center">
+            <div class="loading-spinner mb-4"></div>
+            <h2 id="status-message" class="text-xl font-semibold text-secondary-800 mb-2">Initializing...</h2>
+            <p id="status-details" class="text-secondary-600">Starting the content research process</p>
+        </div>
+        
+        <div class="progress-container mb-6">
+            <div id="progress-bar" class="progress-bar" style="width: 5%;"></div>
+        </div>
+        
+        <div class="text-secondary-500 text-sm">
+            <p>This typically takes 1-2 minutes. Please don't close this window.</p>
+        </div>
+    </div>
+
+    <!-- Theme Selection UI -->
+    <div id="theme-selection" class="theme-selection-container">
+        <div class="card p-8">
+            <h2 class="text-xl font-semibold text-secondary-800 mb-4">Select a Theme</h2>
+            <p class="text-secondary-600 mb-6">Click on a theme to continue with your content plan:</p>
+            <div id="themes-container"></div>
+        </div>
+    </div>
+    
+    <!-- Hidden form for fallback submission -->
+    <form id="theme-form" class="theme-form" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="theme_number" id="theme-input">
+    </form>
+    
+    <div class="mt-6 text-center text-secondary-500 text-sm">
+        <p>Your content plan is being created with:</p>
+        <p><strong>Website URL:</strong> {{ job.website_url }}</p>
+        <p><strong>Keywords:</strong> {{ job.keywords|join(', ') }}</p>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const jobId = "{{ job_id }}";
+        const statusMessage = document.getElementById('status-message');
+        const statusDetails = document.getElementById('status-details');
+        const progressBar = document.getElementById('progress-bar');
+        const themeSelection = document.getElementById('theme-selection');
+        const themesContainer = document.getElementById('themes-container');
+        const themeForm = document.getElementById('theme-form');
+        const themeInput = document.getElementById('theme-input');
+        
+        let checkInterval;
+        let isSubmitting = false;
+        let xhrAttemptFailed = false;
+        
+        // Function to ensure URL has proper leading slash
+        function formatURL(url) {
+            return url.startsWith('/') ? url : '/' + url;
+        }
+
+        function checkStatus() {
+            let statusUrl, resultsPath;
+            
+            try {
+                // Get the current location path and construct the API URL
+                const pathParts = window.location.pathname.split('/');
+                const processIndex = pathParts.indexOf('process');
+                
+                if (processIndex !== -1) {
+                    // Normal path construction
+                    const basePath = pathParts.slice(0, processIndex + 1).join('/');
+                    const statusPath = formatURL(basePath.replace('/process', '/job-status'));
+                    resultsPath = formatURL(basePath.replace('/process', '/results'));
+                    statusUrl = `${statusPath}/${jobId}`;
+                } else {
+                    // Fallback for when 'process' is not in the path
+                    console.log("Process not found in path, using default URLs");
+                    statusUrl = formatURL(`/apps/content-plan/job-status/${jobId}`);
+                    resultsPath = formatURL(`/apps/content-plan/results`);
+                }
+            } catch (error) {
+                // Ultimate fallback
+                console.error("Error constructing API URLs:", error);
+                statusUrl = formatURL(`/apps/content-plan/job-status/${jobId}`);
+                resultsPath = formatURL(`/apps/content-plan/results`);
+            }
+            
+            console.log(`Status URL: ${statusUrl}`);
+            
+            fetch(statusUrl)
+                .then(response => response.json())
+                .then(data => {
+                    // Update status message
+                    statusMessage.textContent = data.current_phase || 'Processing...';
+                    statusDetails.textContent = data.messages && data.messages.length > 0 
+                        ? data.messages[data.messages.length - 1].text || data.messages[data.messages.length - 1]
+                        : 'Working on your content plan...';
+                    
+                    // Update progress bar
+                    progressBar.style.width = data.progress + '%';
+                    
+                    // Handle themes if available
+                    const themeWasSelected = sessionStorage.getItem(`theme_selected_${jobId}`) === 'true';
+                    
+                    if (data.themes && data.themes.length > 0 && !isSubmitting && !themeWasSelected) {
+                        // Only show theme selection if no theme was previously selected
+                        const hasSelectedTheme = data.themes.some(theme => theme.is_selected);
+                        
+                        if (!hasSelectedTheme) {
+                            // Show theme selection UI
+                            themeSelection.classList.add('visible');
+                            document.querySelector('.loading-spinner').style.display = 'none';
+                            
+                            // Add debug output
+                            console.log(`Job status: ${data.status}, Phase: ${data.current_phase}`);
+                            console.log(`Found ${data.themes.length} themes, messages: ${data.messages?.length || 0}`);
+                            console.log(`In progress: ${data.in_progress}, Selected: ${data.themes.some(t => t.is_selected)}`);
+                            
+                            // Populate themes
+                            themesContainer.innerHTML = data.themes.map((theme, index) => `
+                                <div class="theme-card${theme.is_selected ? ' selected' : ''}" 
+                                     onclick="selectTheme(${index + 1})">
+                                    <div class="theme-title">${theme.title}${theme.is_selected ? ' (Selected)' : ''}</div>
+                                    <div class="theme-description">${theme.description}</div>
+                                </div>
+                            `).join('');
+                        } else {
+                            // A theme is already selected, don't show selection UI
+                            console.log('Theme already selected, skipping theme selection UI');
+                            sessionStorage.setItem(`theme_selected_${jobId}`, 'true');
+                            themeSelection.classList.remove('visible');
+                            document.querySelector('.loading-spinner').style.display = 'block';
+                        }
+                    }
+                    
+                    // If complete, redirect to results
+                    if (data.status === 'completed') {
+                        window.location.href = `${resultsPath}/${jobId}`;
+                        clearInterval(checkInterval);
+                    } else if (data.status === 'failed' || data.status === 'error') {
+                        statusMessage.textContent = 'Error Occurred';
+                        statusDetails.textContent = data.error || 'There was a problem generating your content plan. Please try again.';
+                        statusMessage.classList.add('text-red-600');
+                        clearInterval(checkInterval);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking job status:', error);
+                });
+        }
+        
+        // Function to select and submit a theme
+        window.selectTheme = function(themeId) {
+            if (isSubmitting) return;
+            
+            isSubmitting = true;
+            
+            // First thing: Set a flag in sessionStorage to remember this theme was selected
+            sessionStorage.setItem(`theme_selected_${jobId}`, 'true');
+            sessionStorage.setItem(`selected_theme_id_${jobId}`, themeId);
+            
+            // Update UI to show selected theme and processing state
+            document.querySelectorAll('.theme-card').forEach(card => {
+                if (card.getAttribute('onclick').includes(themeId)) {
+                    card.classList.add('selected', 'processing');
+                } else {
+                    card.classList.add('processing');
+                }
+            });
+            
+            // Show loading spinner and update status
+            document.querySelector('.loading-spinner').style.display = 'block';
+            statusMessage.textContent = 'Processing selected theme...';
+            
+            // IMPORTANT: Hide theme selection UI immediately
+            themeSelection.classList.remove('visible');
+            
+            // Update progress bar to indicate progress
+            progressBar.style.width = '60%';
+            
+            // Ensure themeId is a string with digits only
+            const themeIdStr = String(parseInt(themeId));
+            
+            // Set up form for fallback submission
+            themeInput.value = themeIdStr;
+            themeForm.action = `/apps/content-plan/api/theme-selection/${jobId}`;
+            
+            // Try multiple approaches in sequence
+            submitWithXhr()
+                .catch(() => {
+                    console.log('XHR failed, trying fetch...');
+                    return submitWithFetch();
+                })
+                .catch(() => {
+                    console.log('Fetch failed, trying form submission...');
+                    submitWithForm();
+                });
+            
+            // Helper function for XHR submission
+            function submitWithXhr() {
+                return new Promise((resolve, reject) => {
+                    const xhr = new XMLHttpRequest();
+                    const requestUrl = `/apps/content-plan/api/theme-selection/${jobId}`;
+                    
+                    xhr.open('POST', requestUrl, true);
+                    xhr.setRequestHeader('Content-Type', 'application/json');
+                    xhr.setRequestHeader('Accept', 'application/json');
+                    // Add X-CSRFToken header for CSRF protection
+                    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                    if (token) {
+                        xhr.setRequestHeader('X-CSRFToken', token);
+                    }
+                    xhr.timeout = 10000; // 10 seconds timeout
+                    
+                    xhr.onload = function() {
+                        console.log(`XHR response status: ${xhr.status}`);
+                        console.log(`XHR response body: ${xhr.responseText}`);
+                        
+                        if (xhr.status >= 200 && xhr.status < 300) {
+                            try {
+                                const data = JSON.parse(xhr.responseText);
+                                console.log('Theme selection successful:', data);
+                                handleSuccess();
+                                resolve(data);
+                            } catch (e) {
+                                console.error('Error parsing JSON response:', e);
+                                reject(e);
+                            }
+                        } else {
+                            reject(new Error(`Server returned ${xhr.status}`));
+                        }
+                    };
+                    
+                    xhr.onerror = function() {
+                        console.error('XHR network error occurred');
+                        reject(new Error('Network error'));
+                    };
+                    
+                    xhr.ontimeout = function() {
+                        console.error('XHR request timed out');
+                        reject(new Error('Request timed out'));
+                    };
+                    
+                    xhr.send(JSON.stringify({ theme_number: themeIdStr }));
+                });
+            }
+            
+            // Helper function for fetch submission
+            function submitWithFetch() {
+                const requestUrl = `/apps/content-plan/api/theme-selection/${jobId}`;
+                
+                // Get CSRF token from the meta tag if available
+                const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                const headers = {
+                    'Content-Type': 'application/json'
+                };
+                
+                // Add CSRF token if available
+                if (token) {
+                    headers['X-CSRFToken'] = token;
+                }
+                
+                return fetch(requestUrl, {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify({ theme_number: themeIdStr })
+                })
+                .then(response => {
+                    console.log(`Fetch response status: ${response.status}`);
+                    return response.text().then(text => {
+                        console.log(`Fetch response text: ${text}`);
+                        try {
+                            const data = JSON.parse(text);
+                            if (!response.ok) {
+                                throw new Error(data.error || `Server returned ${response.status}`);
+                            }
+                            handleSuccess();
+                            return data;
+                        } catch (e) {
+                            throw new Error('Invalid JSON response');
+                        }
+                    });
+                });
+            }
+            
+            // Helper function for form submission
+            function submitWithForm() {
+                console.log('Submitting via form');
+                
+                // Ensure CSRF token is set in the form
+                const csrf_token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                if (csrf_token) {
+                    const csrfInput = document.querySelector('input[name="csrf_token"]');
+                    if (csrfInput) {
+                        csrfInput.value = csrf_token;
+                        console.log('CSRF token set in form:', csrf_token.substring(0, 10) + '...');
+                    }
+                }
+                
+                // Use an iframe to prevent page reload
+                const iframe = document.createElement('iframe');
+                iframe.name = 'form-target';
+                iframe.style.display = 'none';
+                document.body.appendChild(iframe);
+                
+                themeForm.target = 'form-target';
+                
+                // Add an event listener for the iframe load
+                iframe.addEventListener('load', function() {
+                    console.log('Form submission completed');
+                    handleSuccess();
+                });
+                
+                console.log('Form action:', themeForm.action);
+                console.log('Form inputs:', Array.from(themeForm.elements).map(el => `${el.name}: ${el.value}`));
+                
+                themeForm.submit();
+                
+                // Assume success after 2 seconds as a fallback
+                setTimeout(() => {
+                    handleSuccess();
+                }, 2000);
+            }
+            
+            // Common success handler
+            function handleSuccess() {
+                // Hide theme selection and update UI
+                themeSelection.classList.remove('visible');
+                statusMessage.textContent = 'Processing selected theme...';
+                
+                // Update progress bar to show we're moving forward
+                progressBar.style.width = '60%';
+                
+                // Make sure we continue checking status
+                if (!checkInterval) {
+                    checkInterval = setInterval(checkStatus, 2000);
+                }
+                
+                // Add a fallback redirect after waiting 10 seconds
+                // This helps if the backend got stuck
+                setTimeout(function() {
+                    console.log('Checking if we need to force refresh...');
+                    fetch(`/apps/content-plan/job-status/${jobId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log('Fallback check status:', data.status, 'phase:', data.current_phase);
+                            
+                            // If we're still showing theme selection, force a refresh
+                            if (data.status === 'awaiting_selection' && themeSelection.classList.contains('visible')) {
+                                console.log('Still awaiting selection, forcing refresh...');
+                                window.location.reload();
+                            }
+                        });
+                }, 10000);
+            }
+        };
+        
+        // Check status immediately and then every 2 seconds
+        checkStatus();
+        checkInterval = setInterval(checkStatus, 2000);
+    });
+</script>
+{% endblock %}
