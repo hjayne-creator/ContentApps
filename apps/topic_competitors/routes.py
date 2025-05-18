@@ -1,4 +1,4 @@
-from flask import Blueprint, Flask, render_template, request, jsonify
+from flask import Blueprint, Flask, render_template, request, jsonify, flash, redirect, url_for
 import os
 from openai import OpenAI
 import requests
@@ -10,6 +10,9 @@ import aiohttp
 import asyncio
 from typing import List, Dict
 import time
+from apps.topic_competitors.models import TopicCompetitorsJob
+from apps import db
+import datetime
 
 topic_competitors_bp = Blueprint(
     'topic_competitors',
@@ -42,29 +45,29 @@ except TypeError:
 @topic_competitors_bp.route('/results', methods=['POST'])
 def analyze_topic():
     main_topic = request.form.get('topic')
-    
+    user_ip = request.remote_addr
+    start_time = time.time()
     if not main_topic:
         return jsonify({"error": "No topic provided"}), 400
-    
+    job = TopicCompetitorsJob(
+        main_topic=main_topic,
+        status="processing",
+        created_at=datetime.datetime.utcnow(),
+        user_ip=user_ip
+    )
+    db.session.add(job)
+    db.session.commit()
     try:
-        # Step 2: Generate subtopics
         subtopics = generate_subtopics(main_topic)
-        
-        # Step 3: Generate keywords for each topic and subtopic
+        job.subtopics = subtopics
+        db.session.commit()
         keywords_data = generate_keywords(main_topic, subtopics)
-        
-        # Step 4: Get search volume for keywords
+        job.keywords = keywords_data
+        db.session.commit()
         keywords_with_volume = get_search_volume(keywords_data)
-        
-        # Step 5: Collect SERP data
         keywords_with_serp = asyncio.run(get_serp_data(keywords_with_volume))
-        
-        # Step 6 & 7: Filter content types and analyze domain frequency
         analysis_results = analyze_domains(keywords_with_serp)
-        
-        # Step 8: Generate summary
         summary = generate_summary(analysis_results)
-        
         # Prepare final result
         result = {
             "main_topic": main_topic,
@@ -73,10 +76,18 @@ def analyze_topic():
             "top_domains": analysis_results,
             "summary": summary
         }
-        
+        job.result = result
+        job.summary = summary
+        job.top_domains = analysis_results
+        job.status = "completed"
+        job.duration = round(time.time() - start_time, 2)
+        db.session.commit()
         return render_template('topic_competitors_results.html', result=result)
-    
     except Exception as e:
+        job.status = "error"
+        job.error = str(e)
+        job.duration = round(time.time() - start_time, 2)
+        db.session.commit()
         return jsonify({"error": str(e)}), 500
 
 def generate_subtopics(main_topic):
@@ -344,3 +355,20 @@ def generate_summary(top_domains):
             ]
         )
         return response.choices[0].message.content.strip()
+
+@topic_competitors_bp.route('/admin/jobs')
+def admin_jobs():
+    jobs = TopicCompetitorsJob.query.order_by(TopicCompetitorsJob.created_at.desc()).all()
+    return render_template('admin/jobs.html', jobs=jobs)
+
+@topic_competitors_bp.route('/admin/jobs/cleanup', methods=['POST'])
+def cleanup_jobs():
+    try:
+        # Delete all jobs except completed ones
+        num_deleted = TopicCompetitorsJob.query.filter(TopicCompetitorsJob.status != 'completed').delete()
+        db.session.commit()
+        flash(f'Successfully deleted {num_deleted} incomplete jobs.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error deleting jobs: {str(e)}', 'error')
+    return redirect(url_for('topic_competitors.admin_jobs'))
