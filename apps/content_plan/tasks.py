@@ -270,7 +270,7 @@ def process_workflow_task(self, job_id):
             db.session.commit()
             
             # Research phase
-            add_message_to_job(job, "📊 RESEARCH PHASE: Analyzing website content and search results")
+            add_message_to_job(job, "📊 Analyzing website content and search results")
             #add_message_to_job(job, "🔍 Extracting brand information...")
             db.session.commit()
             
@@ -339,7 +339,7 @@ def process_workflow_task(self, job_id):
                 db.session.commit()
                 
                 # Generate themes
-                add_message_to_job(job, "🎯 ANALYSIS PHASE: Generating content themes")
+                add_message_to_job(job, "🎯 Generating content themes")
                 #add_message_to_job(job, "🤖 Analyzing brand brief and search results for theme opportunities...")
                 db.session.commit()
                 
@@ -491,7 +491,7 @@ def process_selected_theme(job_id):
                 db.session.commit()
                 
             # --- Step 1: Content Cluster Generation ---
-            add_message_to_job(job, "📝 STRATEGY PHASE: Creating content clusters")
+            add_message_to_job(job, "📝 Creating content clusters")
             add_message_to_job(job, f"🎯 Processing selected theme: {selected_theme.title}")
             
             strategy_message = f"""
@@ -517,7 +517,7 @@ def process_selected_theme(job_id):
                 db.session.commit()
                 
                 # --- Step 2: Article Ideation ---
-                add_message_to_job(job, "💡 ARTICLE IDEATION PHASE: Developing content ideas")
+                add_message_to_job(job, "💡 Developing content ideas")
                 
                 # Check if we already have article ideas
                 if job.article_ideas and len(job.article_ideas.strip()) >= 100:
@@ -551,7 +551,7 @@ def process_selected_theme(job_id):
                 db.session.commit()
                 
                 # --- Step 3: Final Plan Generation ---
-                add_message_to_job(job, "📊 EDITING PHASE: Adding final touches to the content plan")
+                add_message_to_job(job, "📊 Adding final touches to the content plan")
                 
                 # Check if we already have a final plan
                 if job.final_plan and len(job.final_plan.strip()) >= 100:
