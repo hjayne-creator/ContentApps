@@ -146,7 +146,8 @@ Your specific responsibilities:
 
 FORMAT YOUR OUTPUT:
 
-# Final Content Plan
+# Content Plan
+Theme: [Theme Name]
 
 ## Executive Summary
 [3-5 sentences summarizing the overall content strategy and expected outcomes]

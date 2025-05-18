@@ -3,12 +3,11 @@
 {% block title %}ContentApps{% endblock %}
 
 {% block head %}
-    <link rel="stylesheet" href="{{ url_for('content_plan.static', filename='style.css') }}">
-    <!-- Additional head elements specific to this page -->
+    <!-- No custom style.css, all styling via Tailwind -->
     <style>
         .loader {
             border: 3px solid #f3f3f3;
-            border-top: 3px solid #3498db;
+            border-top: 3px solid #2563EB; /* Tailwind blue-600 */
             border-radius: 50%;
             width: 20px;
             height: 20px;
@@ -21,39 +20,44 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        .about-tool-list li {
+            padding-top: 0.5rem !important;
+            padding-bottom: 0.5rem !important;
+            margin-bottom: 0 !important;
+        }
     </style>
 {% endblock %}
 
 {% block content %}
     <div class="max-w-4xl mx-auto">
         <header class="text-center mb-10">
-            <h1 class="text-4xl font-bold text-primary-700 mb-6 text-center">Content Planner</h1>
-            <p class="text-xl text-secondary-600">Generate strategic content plans for any topic</p>
+            <h1 class="text-4xl font-extrabold text-blue-700 mb-6 text-center font-sans border-b-2 border-blue-600 pb-2">Content Planner</h1>
+            <p class="text-xl text-blue-500">Generate strategic content plans for any topic</p>
         </header>
         
-        <div class="card">
-            <h2 class="section-title">Generate Your Content Plan</h2>
+        <div class="bg-white rounded-lg shadow p-8 mb-8">
+            <h2 class="text-xl font-semibold text-blue-800 mb-4">Generate Your Content Plan</h2>
             <form id="content-plan-form" action="{{ url_for('content_plan.index') }}" method="post" class="space-y-6" autocomplete="off">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 
                 <div>
-                    <label for="website_url" class="block text-secondary-700 font-medium mb-2">Website URL *</label>
+                    <label for="website_url" class="block text-blue-700 font-medium mb-2">Website URL *</label>
                     <input type="url" id="website_url" name="website_url" placeholder="e.g., https://example.com" required
-                        class="form-input">
-                    <p class="text-sm text-secondary-500 mt-1">Enter your website URL for content analysis</p>
+                        class="form-input block w-full border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500 transition">
+                    <p class="text-sm text-blue-400 mt-1">Enter your website URL for content analysis</p>
                 </div>
                 
                 <div>
-                    <label for="keywords" class="block text-secondary-700 font-medium mb-2">Keywords *</label>
+                    <label for="keywords" class="block text-blue-700 font-medium mb-2">Keywords *</label>
                     <textarea id="keywords" name="keywords" rows="3" 
                         placeholder="Enter keywords, one per line or comma-separated" required
-                        class="form-input"></textarea>
-                    <p class="text-sm text-secondary-500 mt-1">Enter 3-5 keywords related to your content goals</p>
+                        class="form-input block w-full border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500 transition"></textarea>
+                    <p class="text-sm text-blue-400 mt-1">Enter 3-5 keywords related to your content goals</p>
                 </div>
                 
                 <div class="flex items-center justify-between">
-                    <p class="text-sm text-secondary-500">* Required fields</p>
-                    <button type="submit" id="submit-btn" class="btn-primary">
+                    <p class="text-sm text-blue-400">* Required fields</p>
+                    <button type="submit" id="submit-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded shadow focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
                         <span>Generate Content Plan</span>
                     </button>
                 </div>
@@ -61,23 +65,23 @@
         </div>
         
         <div class="mt-8">
-            <div class="card">
-                <h3 class="text-xl font-semibold text-secondary-800 mb-6">About this tool</h3>
-                <ul class="space-y-4 text-secondary-600">
-                    <li class="flex items-start p-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200">
-                        <svg class="h-6 w-6 text-primary-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+            <div class="bg-white rounded-lg shadow p-8">
+                <h3 class="text-xl font-semibold text-blue-800 mb-6">About this tool</h3>
+                <ul class="space-y-4 text-blue-600 about-tool-list">
+                    <li class="flex items-start p-3 rounded-lg hover:bg-blue-50 transition-colors duration-200">
+                        <svg class="h-6 w-6 text-blue-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                         </svg>
                         <span class="text-base leading-relaxed">Get targeted content ideas based on search intent</span>
                     </li>
-                    <li class="flex items-start p-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200">
-                        <svg class="h-6 w-6 text-primary-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <li class="flex items-start p-3 rounded-lg hover:bg-blue-50 transition-colors duration-200">
+                        <svg class="h-6 w-6 text-blue-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                         </svg>
                         <span class="text-base leading-relaxed">Get a comprehensive content plan with structured pillar and supporting content ideas</span>
                     </li>
-                    <li class="flex items-start p-3 rounded-lg hover:bg-secondary-50 transition-colors duration-200">
-                        <svg class="h-6 w-6 text-primary-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <li class="flex items-start p-3 rounded-lg hover:bg-blue-50 transition-colors duration-200">
+                        <svg class="h-6 w-6 text-blue-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                         </svg>
                         <span class="text-base leading-relaxed">Save time on content research and planning</span>
