@@ -1,6 +1,7 @@
-from flask import Flask
+from flask import Flask, Markup
 from apps.content_plan.config import get_config
 from flask_wtf.csrf import CSRFProtect
+import markdown
 
 def create_app():
     app = Flask(__name__, static_folder='apps/static')
@@ -27,6 +28,11 @@ def create_app():
     
     # Initialize content plan blueprint
     init_content_plan(app)
+    
+    # Markdown filter for Jinja2
+    @app.template_filter('markdown')
+    def markdown_filter(text):
+        return Markup(markdown.markdown(text or ""))
     
     return app
 

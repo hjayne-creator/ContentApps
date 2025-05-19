@@ -21,7 +21,7 @@
     <div class="bg-white rounded-lg shadow-md p-6 lg:col-span-2 mb-6">
         <h2 class="text-xl font-bold text-indigo-600 mb-4">Analysis Summary</h2>
         <div class="bg-gray-50 p-4 rounded text-gray-800">
-            {{ result.summary }}
+            {{ result.summary | markdown | safe }}
         </div>
     </div>
 
@@ -86,7 +86,7 @@
                                     </button>
                                 </td>
                             </tr>
-                            <tr class="url-row hidden" id="urls-{{ domain.domain|replace('.', '-') }}">
+                            <tr class="url-row hidden" id="urls-{{ domain.domain|replace('.', '-')|replace('/', '-')|replace(':', '-')|replace('@', '-')|replace('_', '-')|replace(' ', '-') }}">
                                 <td colspan="5" class="px-6 py-4">
                                     <div class="bg-gray-50 p-3 rounded-lg">
                                         <h4 class="font-medium text-gray-700 mb-2">URLs for {{ domain.domain }}</h4>
@@ -164,17 +164,17 @@
         toggleButtons.forEach(button => {
             button.addEventListener('click', function() {
                 const domain = this.getAttribute('data-domain');
-                const domainId = domain.replace(/\./g, '-');
+                const domainId = domain.replace(/[^a-zA-Z0-9]/g, '-');
                 const urlRow = document.getElementById(`urls-${domainId}`);
                 
-                // Toggle visibility
-                urlRow.classList.toggle('hidden');
-                
-                // Toggle button text
-                const showText = this.querySelector('.show-text');
-                const hideText = this.querySelector('.hide-text');
-                showText.classList.toggle('hidden');
-                hideText.classList.toggle('hidden');
+                if (urlRow) {
+                    urlRow.classList.toggle('hidden');
+                    
+                    const showText = this.querySelector('.show-text');
+                    const hideText = this.querySelector('.hide-text');
+                    showText.classList.toggle('hidden');
+                    hideText.classList.toggle('hidden');
+                }
             });
         });
     });

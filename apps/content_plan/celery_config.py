@@ -21,6 +21,7 @@ celery = Celery('content_plan',
                 broker=broker_url,
                 backend=result_backend,
                 include=['apps.content_plan.tasks'])
+celery.conf.broker_connection_retry_on_startup = True
 
 # Task settings
 celery.conf.task_serializer = 'json'

@@ -18,3 +18,4 @@ tiktoken==0.5.2
 flask-assets==2.0
 python-decouple==3.8
 Flask-CORS==4.0.0
+markdown
