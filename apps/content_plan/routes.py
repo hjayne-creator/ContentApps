@@ -632,7 +632,7 @@ def create_blueprint():
     def admin_jobs():
         # Get all jobs ordered by created_at descending
         jobs = Job.query.order_by(Job.created_at.desc()).all()
-        return render_template('admin/jobs.html', jobs=jobs)
+        return render_template('admin/content_plan_jobs.html', jobs=jobs)
 
     @bp.route('/admin/jobs/cleanup', methods=['POST'])
     def cleanup_jobs():

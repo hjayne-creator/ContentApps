@@ -359,7 +359,7 @@ def generate_summary(top_domains):
 @topic_competitors_bp.route('/admin/jobs')
 def admin_jobs():
     jobs = TopicCompetitorsJob.query.order_by(TopicCompetitorsJob.created_at.desc()).all()
-    return render_template('admin/jobs.html', jobs=jobs)
+    return render_template('admin/topic_competitors_jobs.html', jobs=jobs)
 
 @topic_competitors_bp.route('/admin/jobs/cleanup', methods=['POST'])
 def cleanup_jobs():
