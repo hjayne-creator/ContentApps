@@ -83,7 +83,7 @@
                 {% for job in jobs %}
                 <tr class="hover:bg-secondary-50">
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-secondary-900">
-                        {{ job.id[:8] }}...
+                        {{ (job.id|string)[:8] }}...
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm">
                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
