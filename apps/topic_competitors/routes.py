@@ -372,3 +372,8 @@ def cleanup_jobs():
         db.session.rollback()
         flash(f'Error deleting jobs: {str(e)}', 'error')
     return redirect(url_for('topic_competitors.admin_jobs'))
+
+@topic_competitors_bp.route('/results/<int:job_id>')
+def topic_competitors_results(job_id):
+    job = TopicCompetitorsJob.query.get_or_404(job_id)
+    return render_template('topic_competitors_results.html', result=job.result)
