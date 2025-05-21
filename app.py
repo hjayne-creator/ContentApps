@@ -1,4 +1,5 @@
-from flask import Flask, Markup
+from flask import Flask
+from markupsafe import Markup
 from apps.content_plan.config import get_config
 from flask_wtf.csrf import CSRFProtect
 import markdown

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Processing Topic Analysis...{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto p-8 text-center">
+    <h1 class="text-2xl font-bold text-indigo-700 mb-4">Your analysis is being processed</h1>
+    <p class="mb-2">Job ID: <span class="font-mono text-sm bg-gray-100 px-2 py-1 rounded">{{ job_id }}</span></p>
+    {% if celery_task_id %}
+        <p class="mb-2">Task ID: <span class="font-mono text-xs bg-gray-100 px-2 py-1 rounded">{{ celery_task_id }}</span></p>
+    {% endif %}
+    <p id="progress-message" class="text-indigo-600 font-semibold mb-4"></p>
+    {% if error %}
+        <div class="bg-red-100 text-red-700 p-4 rounded mb-4">Error: {{ error }}</div>
+        <a href="{{ url_for('topic_competitors.index') }}" class="btn-primary">Try Again</a>
+    {% else %}
+        <div class="flex flex-col items-center justify-center mt-6 mb-6">
+            <svg class="animate-spin h-8 w-8 text-indigo-600 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+            </svg>
+            <p class="text-gray-700">We're analyzing your topic. This may take 1-2 minutes.</p>
+        </div>
+        <p class="text-sm text-gray-400">This page will refresh automatically.</p>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if not error and celery_task_id %}
+<script>
+    function pollTaskStatus() {
+        fetch(`/apps/topic-competitors/results/task_status/{{ celery_task_id }}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.progress) {
+                    document.getElementById('progress-message').textContent = data.progress;
+                }
+                if (data.status === 'SUCCESS' && data.redirect_url) {
+                    window.location.href = data.redirect_url;
+                } else if (data.status === 'FAILURE') {
+                    document.querySelector('.flex').innerHTML = `<div class='bg-red-100 text-red-700 p-4 rounded mb-4'>Error: ${data.error || 'Unknown error'}</div>`;
+                } else {
+                    setTimeout(pollTaskStatus, 5000);
+                }
+            })
+            .catch(() => setTimeout(pollTaskStatus, 5000));
+    }
+    setTimeout(pollTaskStatus, 2000);
+</script>
+{% endif %}
+{% endblock %} 

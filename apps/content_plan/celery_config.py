@@ -20,7 +20,7 @@ result_backend = os.environ.get('CELERY_RESULT_BACKEND', os.environ.get('result_
 celery = Celery('content_plan',
                 broker=broker_url,
                 backend=result_backend,
-                include=['apps.content_plan.tasks'])
+                include=['apps.content_plan.tasks', 'apps.topic_competitors.jobs'])
 celery.conf.broker_connection_retry_on_startup = True
 
 # Task settings

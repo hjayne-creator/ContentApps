@@ -17,6 +17,8 @@ class TopicCompetitorsJob(db.Model):
     top_domains = db.Column(JSON, nullable=True)
     user_ip = db.Column(db.String(64), nullable=True)
     duration = db.Column(db.Float, nullable=True)
+    celery_task_id = db.Column(db.String(128), nullable=True)
+    progress = db.Column(db.String(255), nullable=True)
 
     def to_dict(self):
         return {
@@ -31,5 +33,7 @@ class TopicCompetitorsJob(db.Model):
             'summary': self.summary,
             'top_domains': self.top_domains,
             'user_ip': self.user_ip,
-            'duration': self.duration
+            'duration': self.duration,
+            'celery_task_id': self.celery_task_id,
+            'progress': self.progress
         } 
