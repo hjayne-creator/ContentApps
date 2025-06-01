@@ -15,6 +15,7 @@ class Config:
     # Celery configuration - updated to new style naming
     broker_url = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/0')
     result_backend = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/0')
+    broker_connection_retry_on_startup = True  # For Celery 6+ compatibility
     
     # API Keys
     OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
