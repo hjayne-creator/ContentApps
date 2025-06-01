@@ -21,4 +21,4 @@ redis==5.0.1
 requests==2.31.0
 serpapi
 SQLAlchemy==2.0.25
-tiktoken==0.5.2
+tiktoken
