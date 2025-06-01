@@ -230,11 +230,8 @@ def create_blueprint():
                 # Ensure processing continues if it stalled before
                 if not job.in_progress:
                     from apps.content_plan.tasks import process_selected_theme
-                    import threading
-                    thread = threading.Thread(target=process_selected_theme, args=(job_id,))
-                    thread.daemon = True
-                    thread.start()
-                    current_app.logger.info(f"Started processing thread for previously selected theme")
+                    process_selected_theme.delay(job_id)
+                    current_app.logger.info(f"Started Celery task for previously selected theme")
                 
                 db.session.commit()
                 current_app.logger.info(f"Fixed job state, now: {job.status}, phase: {job.current_phase}")

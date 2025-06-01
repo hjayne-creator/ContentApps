@@ -123,10 +123,8 @@ def process_workflow_task(self, job_id):
             
             db.session.commit()
             
-            # Start processing the selected theme in a background thread
-            thread = threading.Thread(target=process_selected_theme, args=(job_id,))
-            thread.daemon = True
-            thread.start()
+            # Start processing the selected theme as a Celery task
+            process_selected_theme.delay(job_id)
             return {'status': 'processing'}
         
         # Initialize workflow
@@ -436,37 +434,26 @@ def process_workflow_task(self, job_id):
         return {'status': 'error', 'message': error_msg}
 
 # SIMPLIFIED FUNCTION REPLACING CONTINUE_WORKFLOW_AFTER_SELECTION_TASK
-def process_selected_theme(job_id):
-    """Process the selected theme synchronously, without using Celery"""
-    logger.info(f"[Job {job_id}] Starting post-theme selection workflow")
-    
+@celery.task(bind=True)
+def process_selected_theme(self, job_id):
+    """Process the selected theme as a Celery task (was previously a thread)"""
+    logger.info(f"[Job {job_id}] Starting post-theme selection workflow (Celery task)")
     try:
-        # Get the job
         job = Job.query.get(job_id)
         if not job:
             logger.error(f"[Job {job_id}] Job not found")
             return
-
-        # Set job as in progress
         job.in_progress = True
         db.session.commit()
-
-        # Add message indicating we're continuing
         add_message_to_job(job, "🚀 Continuing workflow with selected theme")
-        
-        # Set up workflow manager
         workflow_manager = WorkflowManager()
         if job.workflow_data:
             workflow_manager.load_state(job.workflow_data)
-        
-        # Ensure we're in the STRATEGY phase
         if workflow_manager.current_phase != 'STRATEGY':
             workflow_manager.set_phase('STRATEGY')
             job.workflow_data = workflow_manager.save_state()
             job.current_phase = workflow_manager.current_phase
             db.session.commit()
-        
-        # Get the selected theme
         selected_theme = Theme.query.filter_by(job_id=job_id, is_selected=True).first()
         if not selected_theme:
             logger.error(f"[Job {job_id}] No theme selected")
@@ -476,104 +463,71 @@ def process_selected_theme(job_id):
             add_message_to_job(job, "❌ Error: No theme was selected")
             db.session.commit()
             return
-        
-        # Ensure selected_theme_id is set correctly
         if job.selected_theme_id != selected_theme.id:
             job.selected_theme_id = selected_theme.id
             db.session.commit()
-        
-        # --- Step 1: Content Cluster Generation ---
         add_message_to_job(job, "📝 Creating content clusters")
         add_message_to_job(job, f"🎯 Processing selected theme: {selected_theme.title}")
-        
         strategy_message = f"""
         ## Brand Brief
         {job.brand_brief}
-        
         ## Selected Theme
         **{selected_theme.title}**
         {selected_theme.description}
-        
         \nPlease create a content cluster framework based on this theme.
         """
-        
         try:
-            # Generate content clusters
             content_cluster = run_agent_with_openai(CONTENT_STRATEGIST_CLUSTER_PROMPT, strategy_message)
             if not content_cluster or len(content_cluster.strip()) < 100:
                 raise Exception("Generated content cluster is too short or empty")
-            
             job.content_cluster = content_cluster
             job.progress = 80
             add_message_to_job(job, "✅ Content clusters created")
             db.session.commit()
-            
-            # --- Step 2: Article Ideation ---
             add_message_to_job(job, "💡 Developing content ideas")
-            
-            # Check if we already have article ideas
             if job.article_ideas and len(job.article_ideas.strip()) >= 100:
                 logger.info(f"[Job {job_id}] Article ideas already exist, skipping generation")
                 add_message_to_job(job, "ℹ️ Article ideas already exist, skipping generation")
                 article_ideas = job.article_ideas
             else:
-                # Generate article ideas
                 ideation_message = f"""
                 ## Brand Brief
                 {job.brand_brief}
-                
                 ## Selected Theme
                 **{selected_theme.title}**
                 {selected_theme.description}
-                
                 ## Content Cluster Framework
                 {content_cluster}
-                
                 \nPlease create article ideas based on this content framework.
                 """
-                
                 article_ideas = run_agent_with_openai(CONTENT_WRITER_PROMPT, ideation_message)
                 if not article_ideas or len(article_ideas.strip()) < 100:
                     raise Exception("Generated article ideas too short or empty")
-                
                 job.article_ideas = article_ideas
                 add_message_to_job(job, "✅ Article ideas generated")
-            
             job.progress = 90
             db.session.commit()
-            
-            # --- Step 3: Final Plan Generation ---
             add_message_to_job(job, "📊 Adding final touches to the content plan")
-            
-            # Check if we already have a final plan
             if job.final_plan and len(job.final_plan.strip()) >= 100:
                 logger.info(f"[Job {job_id}] Final plan already exists, skipping generation")
                 add_message_to_job(job, "ℹ️ Final plan already exists, skipping generation")
                 final_plan = job.final_plan
             else:
-                # Generate final plan
                 finalization_message = f"""
                 ## Brand Brief
                 {job.brand_brief}
-    
                 ## Search Results Analysis
                 {job.search_analysis}
-                
                 ## Selected Theme
                 **{selected_theme.title}**
                 {selected_theme.description}
-                
                 Please create an organized and polished final content plan by reviewing and refining the brand brief and search analysis. 
                 The Pillar Topics & Articles section will be added separately.
                 """
-                
                 final_plan = run_agent_with_openai(CONTENT_EDITOR_PROMPT, finalization_message)
                 if not final_plan or len(final_plan.strip()) < 100:
                     raise Exception("Generated final plan too short or empty")
-                
                 job.final_plan = final_plan
-            
-            # Complete job
             job.progress = 100
             workflow_manager.advance_phase()  # To COMPLETION
             job.workflow_data = workflow_manager.save_state()
@@ -582,23 +536,18 @@ def process_selected_theme(job_id):
             job.completed_at = datetime.now()
             add_message_to_job(job, "✅ Content plan completed successfully!")
             add_message_to_job(job, "🎉 Your content strategy is ready!")
-            
         except Exception as e:
             logger.error(f"[Job {job_id}] Error in theme processing: {str(e)}")
             logger.error(traceback.format_exc())
             job.status = 'error'
             job.error = f"Error processing theme: {str(e)}"
             add_message_to_job(job, f"❌ Error: {str(e)}")
-        
         finally:
-            # Always reset in_progress flag
             job.in_progress = False
             db.session.commit()
-    
     except Exception as e:
         logger.error(f"[Job {job_id}] Unexpected error: {str(e)}")
         logger.error(traceback.format_exc())
-        # Try to update job if possible
         try:
             job = Job.query.get(job_id)
             if job:
@@ -612,40 +561,27 @@ def process_selected_theme(job_id):
 
 # Add a new simple method that can be called directly from routes
 def start_theme_processing(job_id, theme_id):
-    """Start processing the selected theme without Celery"""
+    """Start processing the selected theme using Celery (no threads)"""
     try:
-        # Get job and theme
         job = Job.query.get(job_id)
         theme = Theme.query.get(theme_id)
-        
         if not job or not theme:
             logger.error(f"Job {job_id} or theme {theme_id} not found")
             return False
-            
-        # Mark theme as selected
         theme.is_selected = True
         job.selected_theme_id = theme.id
-        
-        # Set job status
         job.status = 'processing'
         job.in_progress = False  # Will be set to True in process_selected_theme
-        
-        # Advance workflow manager
         workflow_manager = WorkflowManager()
         if job.workflow_data:
             workflow_manager.load_state(job.workflow_data)
         workflow_manager.set_phase('STRATEGY')
         job.workflow_data = workflow_manager.save_state()
         job.current_phase = 'STRATEGY'
-        
         add_message_to_job(job, f"Selected theme: {theme.title}")
         db.session.commit()
-        
-        # Start processing in background thread
-        thread = threading.Thread(target=process_selected_theme, args=(job_id,))
-        thread.daemon = True
-        thread.start()
-        
+        # Start processing as a Celery task
+        process_selected_theme.delay(job.id)
         return True
     except Exception as e:
         logger.error(f"Error starting theme processing: {str(e)}")
