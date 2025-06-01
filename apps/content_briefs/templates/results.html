@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block content %}
+  <div class="card mt-4">
+    <div class="card-body">
+      <h2>{% if keywords and keywords[0] %}{{ keywords[0] }}{% else %}{{ kw }}{% endif %}</h2>
+      {% if keyword_info %}
+        <div class="alert alert-info" style="margin-bottom: 1em;">
+          <strong>Keyword Summary:</strong> {{ keyword_info }}
+        </div>
+      {% endif %}
+      {% if brand_brief %}
+        <div class="alert alert-warning" style="margin-bottom: 1em;">
+          <strong>Brand Brief:</strong> {{ brand_brief }}
+        </div>
+      {% endif %}
+      {% if full_brief %}
+        <div class="alert alert-primary" style="margin-bottom: 1em;">
+          <strong>Brief Outline:</strong>
+          <pre style="white-space: pre-wrap; margin-bottom: 0; background: none; border: none;">{{ full_brief }}</pre>
+        </div>
+      {% endif %}
+      {% if brief.word_count %}
+        <p><strong>Suggested Word Count:</strong> {{ brief.word_count }}</p>
+      {% endif %}
+      {% if keywords or related_keywords %}
+        <hr>
+        <h4>SEO Keywords</h4>
+        <ul>
+          {% if keywords and keywords[0] %}
+            <li>{{ keywords[0] }}</li>
+          {% endif %}
+          {% for kw in related_keywords %}
+            <li>{{ kw }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+      {% if reddit_summaries or brief.reddit_summaries %}
+        <hr>
+        <h4>Reddit Insights</h4>
+        <ul>
+          {% for topic, summary in reddit_summaries.items() %}
+            <li><strong>{{ topic }}:</strong> {{ summary|format_reddit_summary|safe }}</li>
+          {% endfor %}
+          {% if not reddit_summaries %}
+            {% for topic, summary in brief.reddit_summaries.items() %}
+              <li><strong>{{ topic }}:</strong> {{ summary|format_reddit_summary|safe }}</li>
+            {% endfor %}
+          {% endif %}
+        </ul>
+      {% endif %}
+      {% if serp_data %}
+        <hr>
+        <h4>Google Results</h4>
+        {% for kw, data in serp_data.items() %}
+          <div class="mb-3">
+            <h5>{{ kw }}</h5>
+            <ul>
+              {% for result in data.serp_results %}
+                <li class="mb-2">
+                  <a href="{{ result.url }}" target="_blank"><strong>{{ result.title }}</strong></a><br>
+                  <span>{{ result.description }}</span><br>
+                  <small class="text-muted">{{ result.url }}</small>
+                </li>
+              {% endfor %}
+            </ul>
+            {% if data.related_searches %}
+              <div class="mt-2">
+                <strong>Related Searches:</strong>
+                <ul>
+                  {% for search in data.related_searches %}
+                    <li>{{ search.query }}</li>
+                  {% endfor %}
+                </ul>
+              </div>
+            {% endif %}
+            {% if data.related_questions %}
+              <div class="mt-2">
+                <strong>Related Questions:</strong>
+                <ul>
+                  {% for question in data.related_questions %}
+                    <li>{{ question.question }}</li>
+                  {% endfor %}
+                </ul>
+              </div>
+            {% endif %}
+          </div>
+        {% endfor %}
+      {% endif %}
+      <a href="{{ url_for('download_docx', task_id=task_id) }}" class="btn btn-primary mt-3" download>Download as .docx</a>
+      <a href="{{ url_for('index') }}" class="btn btn-secondary mt-3">New Search</a>
+      <a href="/admin" class="btn btn-success mt-3">Jobs</a>
+
+    </div>
+  </div>
+{% endblock %} 

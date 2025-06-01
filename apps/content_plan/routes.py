@@ -29,9 +29,6 @@ from sqlalchemy import text, desc
 csrf = CSRFProtect()
 
 def create_blueprint():
-    # Import celery here to avoid circular imports
-    from apps.content_plan.celery_config import celery
-    
     bp = Blueprint('content_plan', __name__,
                    template_folder='templates',
                    static_folder='static',
@@ -676,10 +673,6 @@ def init_app(app):
     """Initialize the content plan blueprint with the Flask app"""
     # Initialize SQLAlchemy with Flask app
     db.init_app(app)
-    
-    # Initialize Celery with Flask app
-    from apps.content_plan.celery_config import init_celery
-    init_celery(app)
     
     # Initialize Flask-Migrate with the correct migrations directory
     migrate = Migrate(app, db, directory='apps/content_plan/migrations')

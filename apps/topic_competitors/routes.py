@@ -13,10 +13,8 @@ import time
 from apps.topic_competitors.models import TopicCompetitorsJob
 from apps import db
 import datetime
-from apps.content_plan.celery_config import celery
-from apps.topic_competitors.jobs import run_topic_competitor_analysis
-from .logic import generate_subtopics, generate_keywords, get_search_volume, get_serp_data, analyze_domains, generate_summary
 from celery.result import AsyncResult
+from .logic import generate_subtopics, generate_keywords, get_search_volume, get_serp_data, analyze_domains, generate_summary
 
 topic_competitors_bp = Blueprint(
     'topic_competitors',
@@ -61,6 +59,7 @@ def analyze_topic():
     db.session.add(job)
     db.session.commit()
     # Enqueue the background job with Celery
+    from apps.topic_competitors.celery_tasks import run_topic_competitor_analysis
     celery_task = run_topic_competitor_analysis.delay(job.id)
     job.celery_task_id = celery_task.id
     db.session.commit()
@@ -99,7 +98,7 @@ def topic_competitors_status(job_id):
 
 @topic_competitors_bp.route('/results/task_status/<task_id>')
 def topic_competitors_task_status(task_id):
-    res = AsyncResult(task_id, app=celery)
+    res = AsyncResult(task_id)
     status = res.status
     response = {'status': status}
     if status == 'SUCCESS':

@@ -1,0 +1,10 @@
+Flask
+celery
+redis
+requests
+beautifulsoup4
+openai==1.8
+praw
+python-dotenv
+serpapi
+python-docx 

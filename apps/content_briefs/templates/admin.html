@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block content %}
+  <h2>Admin: Past Blog Briefs</h2>
+  {% if briefs %}
+    <table class="table table-striped mt-4">
+      <thead>
+        <tr>
+          <th>Topic</th>
+          <th>Results</th>
+          <th>JSON</th>
+          <th>DOCX</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for brief in briefs %}
+        <tr>
+          <td>{{ brief.topic }}</td>
+          <td><a href="{{ brief.results_link }}" class="btn btn-outline-primary btn-sm">View</a></td>
+          <td><a href="{{ brief.json_link }}" class="btn btn-outline-success btn-sm" download>JSON</a></td>
+          <td><a href="{{ brief.docx_link }}" class="btn btn-outline-secondary btn-sm" download>DOCX</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="alert alert-info mt-4">No briefs found.</div>
+  {% endif %}
+  <a href="{{ url_for('index') }}" class="btn btn-secondary mt-3">Back to Home</a>
+{% endblock %} 

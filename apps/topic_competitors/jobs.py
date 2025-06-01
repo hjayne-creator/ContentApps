@@ -4,12 +4,10 @@ import datetime
 from apps import db
 from apps.topic_competitors.models import TopicCompetitorsJob
 from .logic import generate_subtopics, generate_keywords, get_search_volume, get_serp_data, analyze_domains, generate_summary
-from apps.content_plan.celery_config import celery
 
-# This function will be called by RQ
+# This function will be called by RQ or Celery task wrappers
 
-@celery.task(bind=True)
-def run_topic_competitor_analysis(self, job_id):
+def run_topic_competitor_analysis_logic(job_id):
     job = TopicCompetitorsJob.query.get(job_id)
     if not job:
         return

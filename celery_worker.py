@@ -1,4 +1,4 @@
-from apps.content_plan.celery_config import celery
+from celery_app import celery
 
 # This file is used by Render to start the Celery worker
-# It imports and re-exports the Celery instance from your tasks module 
+# It imports and re-exports the Celery instance from the shared celery_app.py 

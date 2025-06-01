@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Form</title>
+</head>
+<body>
+    <h1>Test Form Submission</h1>
+    <form id="test-form" method="post">
+        <label for="keyword">Keyword:</label>
+        <input type="text" id="keyword" name="keyword"><br>
+        <label for="website">Website:</label>
+        <input type="text" id="website" name="website"><br>
+        <button type="submit">Submit</button>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    </form>
+    <pre id="result"></pre>
+    <script>
+    document.getElementById('test-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        fetch('/content-briefs/test-form', {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+        })
+        .catch(err => {
+            document.getElementById('result').textContent = 'Error: ' + err;
+        });
+    });
+    </script>
+</body>
+</html> 
