@@ -4,6 +4,7 @@ import json
 import io
 from apps.content_briefs.config import Config
 from extensions import csrf
+from apps.content_briefs.tasks.generate_brief import generate_brief_task
 try:
     from docx import Document
 except ImportError:
@@ -23,7 +24,6 @@ def index():
 
 @content_briefs_bp.route('/start', methods=['POST'])
 def start_brief():
-    from .tasks.generate_brief import generate_brief_task 
     if request.is_json:
         data = request.get_json()
     else:
