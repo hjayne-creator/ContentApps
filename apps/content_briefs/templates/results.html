@@ -86,7 +86,7 @@
           </div>
         {% endfor %}
       {% endif %}
-      <a href="{{ url_for('download_docx', task_id=task_id) }}" class="btn btn-primary mt-3" download>Download as .docx</a>
+      <a href="{{ url_for('content_briefs_bp.download_docx', task_id=task_id) }}" class="btn btn-primary mt-3" download>Download as .docx</a>
       <a href="{{ url_for('index') }}" class="btn btn-secondary mt-3">New Search</a>
       <a href="/admin" class="btn btn-success mt-3">Jobs</a>
 
