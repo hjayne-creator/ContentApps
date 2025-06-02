@@ -4,7 +4,7 @@ import praw
 reddit = praw.Reddit(
 client_id='mw9sfMh4aP-9Mr-4o5V5gg',
 client_secret='IyXDezuUvOZ2d-t76K38fEDJO02d_g',
-user_agent='Bugs',
+user_agent='AgentBugs',
 username='TenderTuck',
 password='Housty70_reddit!'
 )

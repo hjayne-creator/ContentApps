@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, jsonify, send_file, abort, current_app
+from flask import Blueprint, render_template, request, jsonify, send_file, abort
 import os
 import json
 import io
