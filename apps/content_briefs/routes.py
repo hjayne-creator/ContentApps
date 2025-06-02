@@ -92,7 +92,7 @@ def results_page(task_id):
         serp_data = data.get('serp_data', {})
         related_keywords = data.get('related_keywords', [])
         brand_brief = data.get('website_summary', '')
-        return render_template('results.html', full_brief=full_brief, brief=brief, task_id=task_id, keywords=keywords, reddit_summaries=reddit_summaries, serp_data=serp_data, keyword_info=keyword_info, related_keywords=related_keywords, brand_brief=brand_brief)
+        return render_template('brief_results.html', full_brief=full_brief, brief=brief, task_id=task_id, keywords=keywords, reddit_summaries=reddit_summaries, serp_data=serp_data, keyword_info=keyword_info, related_keywords=related_keywords, brand_brief=brand_brief)
     except Exception as e:
         return f"Error loading brief: {e}", 404
 
@@ -117,7 +117,7 @@ def admin_page():
                 })
     except Exception as e:
         return f"Error loading briefs: {e}", 500
-    return render_template('admin.html', briefs=briefs)
+    return render_template('briefs_admin.html', briefs=briefs)
 
 
 @content_briefs_bp.route('/progress/<task_id>')

@@ -1,243 +1,234 @@
-{% extends 'content_briefs_base.html' %}
+{% extends 'base.html' %}
+{% block title %}Content Briefs{% endblock %}
 {% block content %}
-<form id="brief-form" method="post" novalidate aria-label="SEO Blog Brief Generator Form">
-  <div class="mb-3">
-    <label for="keyword" class="form-label">Enter Keyword</label>
-    <input type="text" class="form-control" id="keyword" name="keyword" required placeholder="e.g. AI content marketing" aria-required="true" aria-describedby="keywordHelp">
-    <div id="keywordHelp" class="form-text">Main topic for your blog brief.</div>
-    <div class="invalid-feedback">Please enter a keyword.</div>
-  </div>
-  <div class="mb-3">
-    <label for="website" class="form-label">Your Website URL</label>
-    <input type="url" class="form-control" id="website" name="website" required placeholder="https://www.example.com" aria-required="true" aria-describedby="websiteHelp">
-    <div id="websiteHelp" class="form-text">We use this to understand your business.</div>
-    <div class="invalid-feedback">Please enter a valid URL.</div>
-  </div>
-  <input type="hidden" name="csrf_token" id="csrf_token" value="{{ csrf_token() }}">
-  <button type="submit" class="btn btn-primary">Generate Brief</button>
-</form>
-
-<div id="progress-area" class="mt-4" style="display:none;">
-  <div class="mb-3">
-    <div class="progress" aria-label="Progress Bar">
-      <div id="progress-bar" class="progress-bar" role="progressbar" style="width: 0%;"></div>
+<div class="max-w-4xl mx-auto p-6">
+    <header class="mb-10 text-center">
+        <h1 class="text-4xl font-extrabold text-orange-600 mb-6 text-center font-sans border-b-2 border-orange-500 pb-2">Content Briefs</h1>
+        <p class="text-xl text-orange-400">Generate SEO blog briefs with AI-powered research</p>
+    </header>
+    <div class="bg-white rounded-lg shadow p-8">
+        <form id="brief-form" method="post" novalidate aria-label="SEO Blog Brief Generator Form">
+          <div class="mb-6">
+            <label for="keyword" class="block text-sm font-medium text-gray-700 mb-1">Enter Topic / Keyword</label>
+            <input type="text" class="form-input w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition" id="keyword" name="keyword" required placeholder="e.g. AI content marketing" aria-required="true" aria-describedby="keywordHelp">
+            <div id="keywordHelp" class="text-xs text-gray-500 mt-1">Main topic for your blog brief.</div>
+          </div>
+          <div class="mb-6">
+            <label for="website" class="block text-sm font-medium text-gray-700 mb-1">Your Website URL</label>
+            <input type="url" class="form-input w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition" id="website" name="website" required placeholder="https://www.example.com" aria-required="true" aria-describedby="websiteHelp">
+            <div id="websiteHelp" class="text-xs text-gray-500 mt-1">We use this to understand your business.</div>
+          </div>
+          <input type="hidden" name="csrf_token" id="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn-primary w-full py-2 mt-2">Generate Brief</button>
+        </form>
+        <div id="progress-area" class="mt-4" style="display:none;">
+          <div class="mb-3">
+            <div class="progress" aria-label="Progress Bar">
+              <div id="progress-bar" class="progress-bar" role="progressbar" style="width: 0%;"></div>
+            </div>
+          </div>
+          <ul id="progress-steps" class="list-group mb-3" aria-label="Progress Steps">
+            <li class="list-group-item" id="step-1">1. Researching the focus keyword...</li>
+            <li class="list-group-item" id="step-2">2. Collecting Google results...</li>
+            <li class="list-group-item" id="step-3">3. Analyzing sites returned from Google...</li>
+            <li class="list-group-item" id="step-4">4. Analyzing Reddit discussions...</li>
+            <li class="list-group-item" id="step-5">5. Creating a brand profile...</li>
+            <li class="list-group-item" id="step-6">6. Generating blog brief...</li>
+          </ul>
+          <div id="progress-message"></div>
+        </div>
+        <div id="recent-briefs" class="mt-4" aria-live="polite"></div>
+        <div id="result" class="mt-4" style="opacity:0; transition:opacity 0.7s;"></div>
+        <div id="error-message" class="mt-4"></div>
     </div>
-  </div>
-  <ul id="progress-steps" class="list-group mb-3" aria-label="Progress Steps">
-    <li class="list-group-item" id="step-1">1. Researching the focus keyword...</li>
-    <li class="list-group-item" id="step-2">2. Collecting Google results...</li>
-    <li class="list-group-item" id="step-3">3. Analyzing sites returned from Google...</li>
-    <li class="list-group-item" id="step-4">4. Analyzing Reddit discussions...</li>
-    <li class="list-group-item" id="step-5">5. Creating a brand profile...</li>
-    <li class="list-group-item" id="step-6">6. Generating blog brief...</li>
-  </ul>
-  <div id="progress-message"></div>
 </div>
+<script>
+const steps = [
+  'Researching the focus keyword...',
+  'Collecting Google results...',
+  'Analyzing sites returned from Google...',
+  'Analyzing Reddit discussions...',
+  'Creating a brand profile...',
+  'Generating blog brief...'
+];
 
-<div id="recent-briefs" class="mt-4" aria-live="polite"></div>
-<div id="result" class="mt-4" style="opacity:0; transition:opacity 0.7s;"></div>
-<div id="error-message" class="mt-4"></div>
+function setStepStatus(currentStep, error) {
+  for (let i = 1; i <= steps.length; i++) {
+    const li = document.getElementById('step-' + i);
+    li.classList.remove('active', 'list-group-item-success', 'list-group-item-danger');
+    if (i < currentStep) {
+      li.classList.add('list-group-item-success');
+    } else if (i === currentStep) {
+      li.classList.add(error ? 'list-group-item-danger' : 'active');
+    }
+  }
+  const percent = Math.round((currentStep-1) / steps.length * 100);
+  document.getElementById('progress-bar').style.width = percent + '%';
+}
 
-<style>
-  @media (max-width: 600px) {
-    .card-body, .form-label, .form-control, .btn, .form-text, .list-group-item {
-      font-size: 1rem;
+document.getElementById('brief-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  // Client-side validation
+  let valid = true;
+  const keyword = document.getElementById('keyword');
+  const website = document.getElementById('website');
+  if (!keyword.value.trim()) {
+    keyword.classList.add('is-invalid');
+    valid = false;
+  } else {
+    keyword.classList.remove('is-invalid');
+  }
+  try {
+    new URL(website.value);
+    website.classList.remove('is-invalid');
+  } catch {
+    website.classList.add('is-invalid');
+    valid = false;
+  }
+  if (!valid) return;
+
+  document.getElementById('progress-area').style.display = '';
+  setStepStatus(1);
+  document.getElementById('progress-message').innerHTML = '';
+  document.getElementById('result').innerHTML = '';
+  document.getElementById('result').style.opacity = 0;
+  document.getElementById('error-message').innerHTML = '';
+  const formData = new FormData(this);
+  // Add CSRF token to headers
+  const csrfToken = document.getElementById('csrf_token').value;
+  fetch('/content-briefs/start', {
+    method: 'POST',
+    body: formData,
+    headers: {
+      'X-CSRFToken': csrfToken
     }
-    h3 { font-size: 1.2rem; }
-  }
-  .fade-in {
-    opacity: 1 !important;
-    transition: opacity 0.7s;
-  }
-  </style>
-  
-  <script>
-  const steps = [
-    'Researching the focus keyword...',
-    'Collecting Google results...',
-    'Analyzing sites returned from Google...',
-    'Analyzing Reddit discussions...',
-    'Creating a brand profile...',
-    'Generating blog brief...'
-  ];
-  
-  function setStepStatus(currentStep, error) {
-    for (let i = 1; i <= steps.length; i++) {
-      const li = document.getElementById('step-' + i);
-      li.classList.remove('active', 'list-group-item-success', 'list-group-item-danger');
-      if (i < currentStep) {
-        li.classList.add('list-group-item-success');
-      } else if (i === currentStep) {
-        li.classList.add(error ? 'list-group-item-danger' : 'active');
-      }
-    }
-    const percent = Math.round((currentStep-1) / steps.length * 100);
-    document.getElementById('progress-bar').style.width = percent + '%';
-  }
-  
-  document.getElementById('brief-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    // Client-side validation
-    let valid = true;
-    const keyword = document.getElementById('keyword');
-    const website = document.getElementById('website');
-    if (!keyword.value.trim()) {
-      keyword.classList.add('is-invalid');
-      valid = false;
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.task_id) {
+      pollProgress(data.task_id);
     } else {
-      keyword.classList.remove('is-invalid');
+      document.getElementById('progress-area').style.display = 'none';
+      document.getElementById('error-message').innerHTML = `<div class='alert alert-danger'>${data.error}</div>`;
     }
-    try {
-      new URL(website.value);
-      website.classList.remove('is-invalid');
-    } catch {
-      website.classList.add('is-invalid');
-      valid = false;
-    }
-    if (!valid) return;
-  
-    document.getElementById('progress-area').style.display = '';
-    setStepStatus(1);
-    document.getElementById('progress-message').innerHTML = '';
-    document.getElementById('result').innerHTML = '';
-    document.getElementById('result').style.opacity = 0;
-    document.getElementById('error-message').innerHTML = '';
-    const formData = new FormData(this);
-    // Add CSRF token to headers
-    const csrfToken = document.getElementById('csrf_token').value;
-    fetch('/content-briefs/start', {
-      method: 'POST',
-      body: formData,
-      headers: {
-        'X-CSRFToken': csrfToken
-      }
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.task_id) {
-        pollProgress(data.task_id);
-      } else {
-        document.getElementById('progress-area').style.display = 'none';
-        document.getElementById('error-message').innerHTML = `<div class='alert alert-danger'>${data.error}</div>`;
-      }
-    });
   });
-  
-  function pollProgress(taskId) {
-    let lastStep = 1;
-    const interval = setInterval(() => {
-      fetch(`/content-briefs/progress/${taskId}`)
-        .then(res => res.json())
-        .then(data => {
-          let step = data.progress || 1;
-          setStepStatus(step, data.state === 'FAILURE');
-          document.getElementById('progress-message').innerHTML = data.message || '';
-          if (data.state === 'SUCCESS') {
-            clearInterval(interval);
-            window.location.href = `/content-briefs/results/${taskId}`;
-          } else if (data.state === 'FAILURE') {
-            clearInterval(interval);
-            document.getElementById('progress-area').style.display = 'none';
-            document.getElementById('error-message').innerHTML = `<div class='alert alert-danger'>${data.message}</div>`;
-          }
-        });
-    }, 1000);
-  }
-  
-  function renderBrief(resultHtml, taskId) {
-    // If result is a download link, fetch the JSON and render summary
-    const match = resultHtml.match(/download\/(\w+)/);
-    if (match) {
-      fetch(`/content-briefs/download/${match[1]}`)
-        .then(res => res.json())
-        .then(data => {
-          let html = '';
-          if (data.brief) {
-            const b = data.brief;
-            html += `<div class='card mb-3 fade-in' tabindex="0"><div class='card-body'>`;
-            if (b.title) html += `<h3>${b.title} <button class='btn btn-sm btn-outline-secondary ms-2' onclick='copyText("${b.title.replace(/"/g, '&quot;')}")' aria-label='Copy title'>Copy</button></h3>`;
-            if (b.introduction) html += `<p><strong>Introduction:</strong> ${b.introduction} <button class='btn btn-sm btn-outline-secondary ms-2' onclick='copyText("${b.introduction.replace(/"/g, '&quot;')}")' aria-label='Copy introduction'>Copy</button></p>`;
-            if (b.audience) html += `<p><strong>Audience:</strong> ${b.audience} <button class='btn btn-sm btn-outline-secondary ms-2' onclick='copyText("${b.audience.replace(/"/g, '&quot;')}")' aria-label='Copy audience'>Copy</button></p>`;
-            if (b.search_intent) html += `<p><strong>Search Intent:</strong> ${b.search_intent} <button class='btn btn-sm btn-outline-secondary ms-2' onclick='copyText("${b.search_intent.replace(/"/g, '&quot;')}")' aria-label='Copy search intent'>Copy</button></p>`;
-            if (b.talking_points && b.talking_points.length) {
-              html += `<p><strong>Main Talking Points:</strong></p><ul>`;
-              b.talking_points.forEach(tp => {
-                html += `<li>${tp} <button class='btn btn-sm btn-outline-secondary ms-2' onclick='copyText("${tp.replace(/"/g, '&quot;')}")' aria-label='Copy talking point'>Copy</button></li>`;
-              });
-              html += `</ul>`;
-            }
-            if (b.word_count) html += `<p><strong>Suggested Word Count:</strong> ${b.word_count}</p>`;
-            if (b.full_brief) html += `<hr><pre style='white-space:pre-wrap;'>${b.full_brief}</pre>`;
-            html += `</div></div>`;
-          }
-          html += `<a href="/content-briefs/download/${match[1]}" class="btn btn-success me-2" download aria-label="Download JSON">Download JSON</a>`;
-          html += `<button class="btn btn-secondary me-2" onclick="downloadTxt(${match[1]})" aria-label="Download as text">Download as .txt</button>`;
-          html += `<a href="/content-briefs/download_docx/${match[1]}" class="btn btn-primary" download aria-label="Download as Word document">Download as .docx</a>`;
-          document.getElementById('result').innerHTML = html;
-          document.getElementById('result').style.opacity = 1;
-          addBriefToHistory(taskId, b.title || 'Untitled Brief');
-          renderRecentBriefs();
-        })
-        .catch(() => {
-          document.getElementById('result').innerHTML = resultHtml;
-          document.getElementById('result').style.opacity = 1;
-        });
-    } else {
-      document.getElementById('result').innerHTML = resultHtml;
-      document.getElementById('result').style.opacity = 1;
-    }
-  }
-  
-  function copyText(text) {
-    navigator.clipboard.writeText(text);
-  }
-  
-  function downloadTxt(taskId) {
-    fetch(`/content-briefs/download/${taskId}`)
+});
+
+function pollProgress(taskId) {
+  let lastStep = 1;
+  const interval = setInterval(() => {
+    fetch(`/content-briefs/progress/${taskId}`)
       .then(res => res.json())
       .then(data => {
-        let txt = '';
+        let step = data.progress || 1;
+        setStepStatus(step, data.state === 'FAILURE');
+        document.getElementById('progress-message').innerHTML = data.message || '';
+        if (data.state === 'SUCCESS') {
+          clearInterval(interval);
+          window.location.href = `/content-briefs/results/${taskId}`;
+        } else if (data.state === 'FAILURE') {
+          clearInterval(interval);
+          document.getElementById('progress-area').style.display = 'none';
+          document.getElementById('error-message').innerHTML = `<div class='alert alert-danger'>${data.message}</div>`;
+        }
+      });
+  }, 1000);
+}
+
+function renderBrief(resultHtml, taskId) {
+  // If result is a download link, fetch the JSON and render summary
+  const match = resultHtml.match(/download\/(\w+)/);
+  if (match) {
+    fetch(`/content-briefs/download/${match[1]}`)
+      .then(res => res.json())
+      .then(data => {
+        let html = '';
         if (data.brief) {
           const b = data.brief;
-          if (b.title) txt += b.title + '\n\n';
-          if (b.introduction) txt += 'Introduction: ' + b.introduction + '\n\n';
-          if (b.audience) txt += 'Audience: ' + b.audience + '\n';
-          if (b.search_intent) txt += 'Search Intent: ' + b.search_intent + '\n';
+          html += `<div class='card mb-3 fade-in' tabindex="0"><div class='card-body'>`;
+          if (b.title) html += `<h3>${b.title} <button class='btn btn-sm btn-outline-secondary ms-2' onclick='copyText("${b.title.replace(/"/g, '&quot;')}")' aria-label='Copy title'>Copy</button></h3>`;
+          if (b.introduction) html += `<p><strong>Introduction:</strong> ${b.introduction} <button class='btn btn-sm btn-outline-secondary ms-2' onclick='copyText("${b.introduction.replace(/"/g, '&quot;')}")' aria-label='Copy introduction'>Copy</button></p>`;
+          if (b.audience) html += `<p><strong>Audience:</strong> ${b.audience} <button class='btn btn-sm btn-outline-secondary ms-2' onclick='copyText("${b.audience.replace(/"/g, '&quot;')}")' aria-label='Copy audience'>Copy</button></p>`;
+          if (b.search_intent) html += `<p><strong>Search Intent:</strong> ${b.search_intent} <button class='btn btn-sm btn-outline-secondary ms-2' onclick='copyText("${b.search_intent.replace(/"/g, '&quot;')}")' aria-label='Copy search intent'>Copy</button></p>`;
           if (b.talking_points && b.talking_points.length) {
-            txt += 'Main Talking Points:\n';
-            b.talking_points.forEach(tp => { txt += '- ' + tp + '\n'; });
+            html += `<p><strong>Main Talking Points:</strong></p><ul>`;
+            b.talking_points.forEach(tp => {
+              html += `<li>${tp} <button class='btn btn-sm btn-outline-secondary ms-2' onclick='copyText("${tp.replace(/"/g, '&quot;')}")' aria-label='Copy talking point'>Copy</button></li>`;
+            });
+            html += `</ul>`;
           }
-          if (b.word_count) txt += '\nSuggested Word Count: ' + b.word_count + '\n';
-          if (b.full_brief) txt += '\n' + b.full_brief + '\n';
+          if (b.word_count) html += `<p><strong>Suggested Word Count:</strong> ${b.word_count}</p>`;
+          if (b.full_brief) html += `<hr><pre style='white-space:pre-wrap;'>${b.full_brief}</pre>`;
+          html += `</div></div>`;
         }
-        const blob = new Blob([txt], {type: 'text/plain'});
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = 'blog_brief.txt';
-        link.click();
+        html += `<a href="/content-briefs/download/${match[1]}" class="btn btn-success me-2" download aria-label="Download JSON">Download JSON</a>`;
+        html += `<button class="btn btn-secondary me-2" onclick="downloadTxt(${match[1]})" aria-label="Download as text">Download as .txt</button>`;
+        html += `<a href="/content-briefs/download_docx/${match[1]}" class="btn btn-primary" download aria-label="Download as Word document">Download as .docx</a>`;
+        document.getElementById('result').innerHTML = html;
+        document.getElementById('result').style.opacity = 1;
+        addBriefToHistory(taskId, b.title || 'Untitled Brief');
+        renderRecentBriefs();
+      })
+      .catch(() => {
+        document.getElementById('result').innerHTML = resultHtml;
+        document.getElementById('result').style.opacity = 1;
       });
+  } else {
+    document.getElementById('result').innerHTML = resultHtml;
+    document.getElementById('result').style.opacity = 1;
   }
-  
-  // Session/history for recent briefs
-  function addBriefToHistory(taskId, title) {
-    let briefs = JSON.parse(localStorage.getItem('recentBriefs') || '[]');
-    briefs.unshift({taskId, title, date: new Date().toISOString()});
-    briefs = briefs.slice(0, 5); // Keep only 5
-    localStorage.setItem('recentBriefs', JSON.stringify(briefs));
-  }
-  function renderRecentBriefs() {
-    let briefs = JSON.parse(localStorage.getItem('recentBriefs') || '[]');
-    if (!briefs.length) {
-      document.getElementById('recent-briefs').innerHTML = '';
-      return;
-    }
-    let html = '<div class="card"><div class="card-header">Recent Briefs</div><ul class="list-group list-group-flush">';
-    briefs.forEach(b => {
-      html += `<li class="list-group-item d-flex justify-content-between align-items-center"><span>${b.title}</span><a href="/content-briefs/download/${b.taskId}" class="btn btn-link btn-sm" download title="Download JSON"><i class="bi bi-download"></i> JSON</a> <a href="/content-briefs/download_docx/${b.taskId}" class="btn btn-link btn-sm" download title="Download DOCX"><i class="bi bi-file-earmark-word"></i> DOCX</a></li>`;
+}
+
+function copyText(text) {
+  navigator.clipboard.writeText(text);
+}
+
+function downloadTxt(taskId) {
+  fetch(`/content-briefs/download/${taskId}`)
+    .then(res => res.json())
+    .then(data => {
+      let txt = '';
+      if (data.brief) {
+        const b = data.brief;
+        if (b.title) txt += b.title + '\n\n';
+        if (b.introduction) txt += 'Introduction: ' + b.introduction + '\n\n';
+        if (b.audience) txt += 'Audience: ' + b.audience + '\n';
+        if (b.search_intent) txt += 'Search Intent: ' + b.search_intent + '\n';
+        if (b.talking_points && b.talking_points.length) {
+          txt += 'Main Talking Points:\n';
+          b.talking_points.forEach(tp => { txt += '- ' + tp + '\n'; });
+        }
+        if (b.word_count) txt += '\nSuggested Word Count: ' + b.word_count + '\n';
+        if (b.full_brief) txt += '\n' + b.full_brief + '\n';
+      }
+      const blob = new Blob([txt], {type: 'text/plain'});
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'blog_brief.txt';
+      link.click();
     });
-    html += '</ul></div>';
-    document.getElementById('recent-briefs').innerHTML = html;
+}
+
+// Session/history for recent briefs
+function addBriefToHistory(taskId, title) {
+  let briefs = JSON.parse(localStorage.getItem('recentBriefs') || '[]');
+  briefs.unshift({taskId, title, date: new Date().toISOString()});
+  briefs = briefs.slice(0, 5); // Keep only 5
+  localStorage.setItem('recentBriefs', JSON.stringify(briefs));
+}
+function renderRecentBriefs() {
+  let briefs = JSON.parse(localStorage.getItem('recentBriefs') || '[]');
+  if (!briefs.length) {
+    document.getElementById('recent-briefs').innerHTML = '';
+    return;
   }
-  renderRecentBriefs();
-  </script>
-  {% endblock %} 
+  let html = '<div class="card"><div class="card-header">Recent Briefs</div><ul class="list-group list-group-flush">';
+  briefs.forEach(b => {
+    html += `<li class="list-group-item d-flex justify-content-between align-items-center"><span>${b.title}</span><a href="/content-briefs/download/${b.taskId}" class="btn btn-link btn-sm" download title="Download JSON"><i class="bi bi-download"></i> JSON</a> <a href="/content-briefs/download_docx/${b.taskId}" class="btn btn-link btn-sm" download title="Download DOCX"><i class="bi bi-file-earmark-word"></i> DOCX</a></li>`;
+  });
+  html += '</ul></div>';
+  document.getElementById('recent-briefs').innerHTML = html;
+}
+renderRecentBriefs();
+</script>
+{% endblock %} 
