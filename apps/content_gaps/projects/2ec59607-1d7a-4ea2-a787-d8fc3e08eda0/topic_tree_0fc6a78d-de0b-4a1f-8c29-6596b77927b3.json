@@ -1,0 +1,114 @@
+{
+  "tree_id": "0fc6a78d-de0b-4a1f-8c29-6596b77927b3",
+  "tree_name": "TopicsV1 Rellify",
+  "root_topic": "content digital marketing",
+  "tree": [
+    {
+      "name": "Content Digital Marketing",
+      "children": [
+        {
+          "name": "Content Creation",
+          "children": [
+            {
+              "name": "Blog Posts"
+            },
+            {
+              "name": "Videos"
+            },
+            {
+              "name": "Infographics"
+            },
+            {
+              "name": "E-books"
+            }
+          ]
+        },
+        {
+          "name": "Content Distribution",
+          "children": [
+            {
+              "name": "Social Media",
+              "children": [
+                {
+                  "name": "Facebook"
+                },
+                {
+                  "name": "Instagram"
+                },
+                {
+                  "name": "Twitter"
+                },
+                {
+                  "name": "LinkedIn"
+                }
+              ]
+            },
+            {
+              "name": "Email Marketing",
+              "children": [
+                {
+                  "name": "Newsletter"
+                },
+                {
+                  "name": "Drip Campaigns"
+                }
+              ]
+            },
+            {
+              "name": "SEO",
+              "children": [
+                {
+                  "name": "On-Page SEO"
+                },
+                {
+                  "name": "Off-Page SEO"
+                },
+                {
+                  "name": "Technical SEO"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Content Strategy",
+          "children": [
+            {
+              "name": "Audience Research",
+              "children": [
+                {
+                  "name": "Demographics"
+                },
+                {
+                  "name": "Psychographics"
+                }
+              ]
+            },
+            {
+              "name": "Content Planning",
+              "children": [
+                {
+                  "name": "Editorial Calendar"
+                },
+                {
+                  "name": "Content Audits"
+                }
+              ]
+            },
+            {
+              "name": "Performance Analysis",
+              "children": [
+                {
+                  "name": "Analytics Tools"
+                },
+                {
+                  "name": "KPIs"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

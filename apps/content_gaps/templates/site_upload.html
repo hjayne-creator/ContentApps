@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}Upload Site Content | Content Gaps{% endblock %}
+{% block content %}
+<div class="max-w-xl mx-auto p-6">
+    <a href="{{ url_for('content_gaps.view_project', project_id=project_id) }}" class="text-green-600 hover:underline">&larr; Back to Project</a>
+    <h1 class="text-2xl font-bold text-green-700 mt-4 mb-4">Upload Site Content</h1>
+    <form method="post" enctype="multipart/form-data" class="bg-white rounded-lg shadow p-6">
+        <div class="mb-4">
+            <label for="site_label" class="block text-sm font-medium text-gray-700 mb-1">Site Label</label>
+            <input type="text" id="site_label" name="site_label" class="form-input w-full border border-gray-300 rounded px-3 py-2" required>
+        </div>
+        <div class="mb-4">
+            <label for="csv_file" class="block text-sm font-medium text-gray-700 mb-1">CSV File</label>
+            <input type="file" id="csv_file" name="csv_file" accept=".csv" class="form-input w-full border border-gray-300 rounded px-3 py-2" required>
+        </div>
+        <div class="mb-4 flex items-center">
+            <input type="checkbox" id="is_my_site" name="is_my_site" class="mr-2">
+            <label for="is_my_site" class="text-sm text-gray-700">Flag as My Site</label>
+        </div>
+        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Upload</button>
+    </form>
+</div>
+{% endblock %} 
