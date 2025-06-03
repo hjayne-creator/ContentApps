@@ -186,7 +186,37 @@ def edit_topic_tree(project_id, tree_id):
             flash('Could not load topic tree data.')
     else:
         flash('Topic tree not found.')
-    return render_template('topic_tree_edit.html', project_id=project_id, tree_id=tree_id, tree_data=tree_data)
+    return render_template('topic_tree_edit_h.html', project_id=project_id, tree_id=tree_id, tree_data=tree_data)
+
+@content_gaps_bp.route('/projects/<project_id>/topic-trees/<tree_id>/edit-vertical', methods=['GET', 'POST'])
+def edit_topic_tree_vertical(project_id, tree_id):
+    project_dir = os.path.join(PROJECTS_DIR, project_id)
+    tree_path = os.path.join(project_dir, f'topic_tree_{tree_id}.json')
+    tree_data = {'tree_name': '', 'root_topic': '', 'tree': []}
+    if request.method == 'POST':
+        tree_json = request.form.get('tree_json', '')
+        try:
+            new_tree = json.loads(tree_json)
+            # Load existing data
+            if os.path.isfile(tree_path):
+                with open(tree_path) as f:
+                    tree_data = json.load(f)
+            tree_data['tree'] = new_tree
+            with open(tree_path, 'w') as f:
+                json.dump(tree_data, f, indent=2)
+            flash('Tree saved successfully.', 'success')
+        except Exception as e:
+            flash(f'Error saving tree: {e}')
+    # Always reload for display
+    if os.path.isfile(tree_path):
+        try:
+            with open(tree_path) as f:
+                tree_data = json.load(f)
+        except Exception:
+            flash('Could not load topic tree data.')
+    else:
+        flash('Topic tree not found.')
+    return render_template('topic_tree_edit_v.html', project_id=project_id, tree_id=tree_id, tree_data=tree_data)
 
 @content_gaps_bp.route('/projects/<project_id>/sites/upload', methods=['GET', 'POST'])
 def upload_site_content(project_id):

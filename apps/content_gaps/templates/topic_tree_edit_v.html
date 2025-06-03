@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% block title %}Edit Topic Tree (Vertical) | Content Gaps{% endblock %}
+{% macro render_tree_vertical(nodes, parent_path=[]) %}
+    <div class="ml-0">
+    {% for node in nodes %}
+        {% set path = parent_path + [loop.index0] %}
+        <div class="mb-4 border-l-4 border-green-200 pl-4 relative">
+            <div class="bg-white rounded shadow p-3 flex items-center gap-2">
+                <span class="drag-handle cursor-move text-gray-400 select-none">&#9776;</span>
+                <input type="text" class="node-name-input font-semibold text-green-700 border-b border-green-300 focus:outline-none focus:border-green-600 bg-transparent" value="{{ node.name }}" data-path="{{ path|join('-') }}" />
+                <button type="button" class="add-child-btn text-xs text-green-600 ml-2" data-path="{{ path|join('-') }}">+ Add Child</button>
+                {% if parent_path|length > 0 or loop.length > 1 %}
+                    <button type="button" class="delete-node-btn text-xs text-red-500 ml-1" data-path="{{ path|join('-') }}">Delete</button>
+                {% endif %}
+            </div>
+            {% if node.children %}
+                <div class="ml-8 mt-2 border-l-2 border-green-100 pl-4">
+                    {{ render_tree_vertical(node.children, path) }}
+                </div>
+            {% endif %}
+        </div>
+    {% endfor %}
+    </div>
+{% endmacro %}
+{% block content %}
+<div class="max-w-4xl mx-auto p-6">
+    <a href="{{ url_for('content_gaps.view_project', project_id=project_id) }}" class="text-green-600 hover:underline">&larr; Back to Project</a>
+    <h1 class="text-2xl font-bold text-green-700 mt-4 mb-2">Edit Topic Tree (Vertical)</h1>
+    <div class="bg-white rounded-lg shadow p-6 mt-4">
+        <div class="mb-2">
+            <span class="font-bold text-green-800">Tree Name:</span> {{ tree_data.tree_name }}
+        </div>
+        <div class="mb-4">
+            <span class="font-bold text-green-800">Root Topic:</span> {{ tree_data.root_topic }}
+        </div>
+        <h2 class="text-lg font-semibold text-green-700 mb-2">Tree Structure</h2>
+        <form id="tree-edit-form" method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="tree_json" id="tree_json" />
+            <div id="tree-editor">
+                {% if tree_data.tree and tree_data.tree|length > 0 %}
+                    {{ render_tree_vertical(tree_data.tree) }}
+                {% else %}
+                    <button type="button" id="add-root-btn" class="bg-green-500 text-white px-3 py-1 rounded">+ Add Root Node</button>
+                {% endif %}
+            </div>
+            <button type="submit" class="mt-6 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Save Changes</button>
+        </form>
+    </div>
+</div>
+<!-- SortableJS CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<script>
+// Tree editing logic (vertical version)
+function getTreeFromDOM(ulOrDiv) {
+    const nodes = [];
+    ulOrDiv.querySelectorAll(':scope > .mb-4').forEach(div => {
+        const nameInput = div.querySelector('input.node-name-input');
+        const name = nameInput ? nameInput.value : '';
+        const childDiv = div.querySelector(':scope > .ml-8');
+        let children = [];
+        if (childDiv) {
+            children = getTreeFromDOM(childDiv);
+        }
+        const node = { name };
+        if (children.length > 0) node.children = children;
+        nodes.push(node);
+    });
+    return nodes;
+}
+function findNodeElementByPath(path) {
+    return document.querySelector('.mb-4[data-path="' + path + '"]');
+}
+function initAllSortables() {
+    document.querySelectorAll('.ml-0, .ml-8').forEach(function(div) {
+        new Sortable(div, {
+            handle: '.drag-handle',
+            animation: 150,
+            ghostClass: 'bg-green-100',
+            fallbackOnBody: true,
+            swapThreshold: 0.65,
+            draggable: '.mb-4'
+        });
+    });
+}
+document.addEventListener('DOMContentLoaded', function() {
+    const treeEditor = document.getElementById('tree-editor');
+    // Add child node
+    treeEditor.addEventListener('click', function(e) {
+        if (e.target.classList.contains('add-child-btn')) {
+            const path = e.target.getAttribute('data-path');
+            const parentDiv = findNodeElementByPath(path);
+            let childDiv = parentDiv.querySelector(':scope > .ml-8');
+            if (!childDiv) {
+                childDiv = document.createElement('div');
+                childDiv.className = 'ml-8 mt-2 border-l-2 border-green-100 pl-4';
+                childDiv.setAttribute('data-path', path);
+                parentDiv.appendChild(childDiv);
+                new Sortable(childDiv, {
+                    handle: '.drag-handle',
+                    animation: 150,
+                    ghostClass: 'bg-green-100',
+                    fallbackOnBody: true,
+                    swapThreshold: 0.65,
+                    draggable: '.mb-4'
+                });
+            }
+            const idx = childDiv.children.length;
+            const newPath = path ? path + '-' + idx : '' + idx;
+            const newNodeDiv = document.createElement('div');
+            newNodeDiv.className = 'mb-4 border-l-4 border-green-200 pl-4 relative';
+            newNodeDiv.setAttribute('data-path', newPath);
+            newNodeDiv.innerHTML = `<div class='bg-white rounded shadow p-3 flex items-center gap-2'><span class='drag-handle cursor-move text-gray-400 select-none'>&#9776;</span><input type="text" class="node-name-input font-semibold text-green-700 border-b border-green-300 focus:outline-none focus:border-green-600 bg-transparent" value="New Node" data-path="${newPath}" /> <button type="button" class="add-child-btn text-xs text-green-600 ml-2" data-path="${newPath}">+ Add Child</button> <button type="button" class="delete-node-btn text-xs text-red-500 ml-1" data-path="${newPath}">Delete</button></div>`;
+            childDiv.appendChild(newNodeDiv);
+        }
+        if (e.target.classList.contains('delete-node-btn')) {
+            const path = e.target.getAttribute('data-path');
+            const div = findNodeElementByPath(path);
+            if (div) div.remove();
+        }
+        if (e.target.id === 'add-root-btn') {
+            treeEditor.innerHTML = `<div class='ml-0'><div class='mb-4 border-l-4 border-green-200 pl-4 relative' data-path='0'><div class='bg-white rounded shadow p-3 flex items-center gap-2'><span class='drag-handle cursor-move text-gray-400 select-none'>&#9776;</span><input type='text' class='node-name-input font-semibold text-green-700 border-b border-green-300 focus:outline-none focus:border-green-600 bg-transparent' value='Root Node' data-path='0' /> <button type='button' class='add-child-btn text-xs text-green-600 ml-2' data-path='0'>+ Add Child</button></div></div></div>`;
+            initAllSortables();
+        }
+    });
+    // On submit, serialize tree
+    document.getElementById('tree-edit-form').addEventListener('submit', function(e) {
+        const rootDiv = treeEditor.querySelector('.ml-0');
+        let tree = [];
+        if (rootDiv) tree = getTreeFromDOM(rootDiv);
+        document.getElementById('tree_json').value = JSON.stringify(tree);
+    });
+    // Initialize Sortable on all lists
+    initAllSortables();
+});
+</script>
+{% endblock %} 

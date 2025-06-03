@@ -19,7 +19,7 @@
     </ul>
 {% endmacro %}
 {% block content %}
-<div class="max-w-3xl mx-auto p-6">
+<div class="max-w-4xl mx-auto p-6">
     <a href="{{ url_for('content_gaps.view_project', project_id=project_id) }}" class="text-green-600 hover:underline">&larr; Back to Project</a>
     <h1 class="text-2xl font-bold text-green-700 mt-4 mb-2">Edit Topic Tree</h1>
     <div class="bg-white rounded-lg shadow p-6 mt-4">
@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const newLi = document.createElement('li');
             newLi.className = 'mb-2 flex items-center';
             newLi.setAttribute('data-path', newPath);
-            newLi.innerHTML = `<span class='drag-handle cursor-move text-gray-400 mr-2 select-none'>&#9776;</span><input type="text" class="node-name-input font-semibold text-green-700 border-b border-green-300 focus:outline-none focus:border-green-600 bg-transparent" value="New Node" data-path="${newPath}" /> <button type="button" class="add-child-btn text-xs text-green-600 ml-2" data-path="${newPath}">+ Add Child</button> <button type="button" class="delete-node-btn text-xs text-red-500 ml-1" data-path="${newPath}">Delete</button>`;
+            newLi.innerHTML = `<span class='drag-handle cursor-move text-gray-400 mr-2 select-none'>&#9776;</span><input type='text' class='node-name-input font-semibold text-green-700 border-b border-green-300 focus:outline-none focus:border-green-600 bg-transparent' value='New Node' data-path="${newPath}" /> <button type='button' class='add-child-btn text-xs text-green-600 ml-2' data-path="${newPath}">+ Add Child</button> <button type='button' class='delete-node-btn text-xs text-red-500 ml-1' data-path="${newPath}">Delete</button>`;
             ul.appendChild(newLi);
         }
         if (e.target.classList.contains('delete-node-btn')) {

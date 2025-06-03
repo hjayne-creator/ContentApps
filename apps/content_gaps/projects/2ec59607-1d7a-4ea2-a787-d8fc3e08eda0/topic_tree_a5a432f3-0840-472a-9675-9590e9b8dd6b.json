@@ -1,0 +1,132 @@
+{
+  "tree_id": "a5a432f3-0840-472a-9675-9590e9b8dd6b",
+  "tree_name": "Tree Name 1",
+  "root_topic": "Digital Content Marketing",
+  "tree": [
+    {
+      "name": "Digital Content Marketing",
+      "children": [
+        {
+          "name": "Content Creation",
+          "children": [
+            {
+              "name": "Blog Posts"
+            },
+            {
+              "name": "Videos"
+            },
+            {
+              "name": "Infographics"
+            },
+            {
+              "name": "Podcasts"
+            },
+            {
+              "name": "Ebooks and Whitepapers"
+            }
+          ]
+        },
+        {
+          "name": "Content Strategy",
+          "children": [
+            {
+              "name": "Audience Research"
+            },
+            {
+              "name": "Content Calendar"
+            },
+            {
+              "name": "SEO Optimization"
+            },
+            {
+              "name": "Brand Voice and Messaging"
+            },
+            {
+              "name": "Content Distribution Channels"
+            }
+          ]
+        },
+        {
+          "name": "Content Promotion",
+          "children": [
+            {
+              "name": "Social Media Marketing"
+            },
+            {
+              "name": "Email Marketing"
+            },
+            {
+              "name": "Influencer Marketing"
+            },
+            {
+              "name": "Paid Advertising"
+            },
+            {
+              "name": "Partnerships and Collaborations"
+            }
+          ]
+        },
+        {
+          "name": "Content Performance and Analytics",
+          "children": [
+            {
+              "name": "Key Performance Indicators (KPIs)"
+            },
+            {
+              "name": "Analytics Tools"
+            },
+            {
+              "name": "A/B Testing"
+            },
+            {
+              "name": "User Engagement Metrics"
+            },
+            {
+              "name": "Conversion Rate Optimization"
+            }
+          ]
+        },
+        {
+          "name": "Content Management",
+          "children": [
+            {
+              "name": "Content Management Systems (CMS)"
+            },
+            {
+              "name": "Version Control"
+            },
+            {
+              "name": "Content Curation"
+            },
+            {
+              "name": "Content Audits"
+            },
+            {
+              "name": "Editorial Workflows"
+            }
+          ]
+        },
+        {
+          "name": "Emerging Trends and Technologies",
+          "children": [
+            {
+              "name": "AI in Content Marketing"
+            },
+            {
+              "name": "Interactive Content"
+            },
+            {
+              "name": "Personalization"
+            },
+            {
+              "name": "Voice Search Optimization"
+            },
+            {
+              "name": "Augmented Reality (AR) and Virtual Reality (VR)"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

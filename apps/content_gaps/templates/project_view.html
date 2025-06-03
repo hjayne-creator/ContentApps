@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block title %}Project Dashboard | Content Gaps{% endblock %}
 {% block content %}
-<div class="max-w-3xl mx-auto p-6">
+<div class="max-w-4xl mx-auto p-6">
     <a href="{{ url_for('content_gaps.index') }}" class="text-green-600 hover:underline">&larr; Back to Projects</a>
     <h1 class="text-2xl font-bold text-green-700 mt-4 mb-2">{{ project.project_name if project else 'Project Dashboard' }}</h1>
     <div class="bg-white rounded-lg shadow p-6 mt-4">
@@ -32,8 +32,9 @@
                         <div class="font-bold text-green-700">{{ tree.tree_name }}</div>
                         <div class="text-sm text-gray-500">Root Topic: {{ tree.root_topic }}</div>
                     </div>
-                    <div class="mt-2 md:mt-0">
-                        <a href="{{ url_for('content_gaps.edit_topic_tree', project_id=project_id, tree_id=tree.tree_id) }}" class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600">Edit</a>
+                    <div class="mt-2 md:mt-0 flex gap-2">
+                        <a href="{{ url_for('content_gaps.edit_topic_tree_vertical', project_id=project_id, tree_id=tree.tree_id) }}" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">Vertical Edit</a>
+                        <a href="{{ url_for('content_gaps.edit_topic_tree', project_id=project_id, tree_id=tree.tree_id) }}" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">Horizontal Edit</a>
                     </div>
                 </li>
                 {% endfor %}

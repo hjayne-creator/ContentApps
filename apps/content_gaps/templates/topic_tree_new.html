@@ -4,6 +4,7 @@
 <div class="max-w-xl mx-auto p-6">
     <a href="{{ url_for('content_gaps.view_project', project_id=project_id) }}" class="text-green-600 hover:underline">&larr; Back to Project</a>
     <h1 class="text-2xl font-bold text-green-700 mt-4 mb-4">Create Topic Tree</h1>
+    <h2 class="text-sm text-gray-700 mb-4">This will auto generate a topic tree using LLM based on the root topic / keyword.</h2>
     <form method="post" class="bg-white rounded-lg shadow p-6">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="mb-4">
