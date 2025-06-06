@@ -89,13 +89,13 @@ class Config:
         logging.info(f"- Using OpenAI model: {cls.OPENAI_MODEL}")
         
         # Test database connection with detailed error handling
+        from sqlalchemy import create_engine, text
+        import psycopg2
+        
+        # Log connection attempt
+        logging.info("Attempting to connect to database...")
+        
         try:
-            from sqlalchemy import create_engine, text
-            import psycopg2
-            
-            # Log connection attempt
-            logging.info("Attempting to connect to database...")
-            
             # Create engine with connection timeout
             engine = create_engine(
                 db_url,
