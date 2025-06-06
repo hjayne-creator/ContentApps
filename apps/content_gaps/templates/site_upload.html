@@ -1,23 +1,147 @@
 {% extends 'base.html' %}
 {% block title %}Upload Site Content | Content Gaps{% endblock %}
 {% block content %}
-<div class="max-w-xl mx-auto p-6">
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="mb-4">
+      {% for category, msg in messages %}
+        <div class="px-4 py-2 rounded mb-2
+          {% if category == 'success' %}bg-green-100 text-green-700
+          {% elif category == 'error' %}bg-red-100 text-red-700
+          {% else %}bg-yellow-100 text-yellow-700{% endif %}">
+          {{ msg }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+<div class="max-w-full mx-auto p-6"><div class="bg-white rounded-lg shadow p-6 mb-4">
     <a href="{{ url_for('content_gaps.view_project', project_id=project_id) }}" class="text-green-600 hover:underline">&larr; Back to Project</a>
     <h1 class="text-2xl font-bold text-green-700 mt-4 mb-4">Upload Site Content</h1>
-    <form method="post" enctype="multipart/form-data" class="bg-white rounded-lg shadow p-6">
-        <div class="mb-4">
-            <label for="site_label" class="block text-sm font-medium text-gray-700 mb-1">Site Label</label>
-            <input type="text" id="site_label" name="site_label" class="form-input w-full border border-gray-300 rounded px-3 py-2" required>
-        </div>
-        <div class="mb-4">
-            <label for="csv_file" class="block text-sm font-medium text-gray-700 mb-1">CSV File</label>
+    {% if mapping_required %}
+      <div class="bg-white rounded-lg shadow p-6 mb-4">
+        <h2 class="text-lg font-semibold text-green-700 mb-2">Map CSV Columns</h2>
+        <form method="post" enctype="multipart/form-data">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="site_label" value="{{ site_label }}">
+          <input type="hidden" name="is_my_site" value="{{ is_my_site|int }}">
+          {% for col in csv_columns %}
+            <input type="hidden" name="csv_columns" value="{{ col }}">
+          {% endfor %}
+          <div class="mb-4">
+            <label for="title_column" class="block text-sm font-medium text-gray-700 mb-1">Title Column</label>
+            <select id="title_column" name="title_column" class="form-select w-full border border-gray-300 rounded px-3 py-2" required>
+              <option value="">-- Select --</option>
+              {% for col in csv_columns %}
+                <option value="{{ col }}">{{ col }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-4">
+            <label for="description_column" class="block text-sm font-medium text-gray-700 mb-1">Description Column</label>
+            <select id="description_column" name="description_column" class="form-select w-full border border-gray-300 rounded px-3 py-2" required>
+              <option value="">-- Select --</option>
+              {% for col in csv_columns %}
+                <option value="{{ col }}">{{ col }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-4">
+            <label for="url_column" class="block text-sm font-medium text-gray-700 mb-1">URL Column</label>
+            <select id="url_column" name="url_column" class="form-select w-full border border-gray-300 rounded px-3 py-2" required>
+              <option value="">-- Select --</option>
+              {% for col in csv_columns %}
+                <option value="{{ col }}">{{ col }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-4">
+            <label for="csv_file" class="block text-sm font-medium text-gray-700 mb-1">Re-upload CSV File</label>
             <input type="file" id="csv_file" name="csv_file" accept=".csv" class="form-input w-full border border-gray-300 rounded px-3 py-2" required>
+          </div>
+          <input type="hidden" name="mapping_confirm" value="1">
+          <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Continue</button>
+        </form>
+        {% if mapping_sample_rows and mapping_sample_rows|length > 0 %}
+        <h3 class="font-semibold text-green-600 mt-4 mb-2">Sample Rows</h3>
+        <div class="overflow-x-auto">
+          <table class="min-w-full border border-gray-200 bg-white rounded-lg">
+            <thead>
+              <tr>
+                {% for col in csv_columns %}
+                  <th class="px-4 py-2 border-b">{{ col }}</th>
+                {% endfor %}
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in mapping_sample_rows %}
+                <tr>
+                  {% for col in csv_columns %}
+                    <td class="px-4 py-2 border-b">{{ row[col] }}</td>
+                  {% endfor %}
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
         </div>
-        <div class="mb-4 flex items-center">
-            <input type="checkbox" id="is_my_site" name="is_my_site" class="mr-2">
-            <label for="is_my_site" class="text-sm text-gray-700">Flag as My Site</label>
+        {% endif %}
+      </div>
+    {% elif preview_data %}
+      <div class="bg-white rounded-lg shadow p-6 mb-4">
+        <h2 class="text-lg font-semibold text-green-700 mb-2">Preview Detected Columns</h2>
+        <div class="mb-2">
+          <span class="font-bold">Title:</span> {{ preview_data.field_map.title }}<br>
+          <span class="font-bold">Description:</span> {{ preview_data.field_map.description }}<br>
+          <span class="font-bold">URL:</span> {{ preview_data.field_map.url }}
         </div>
-        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Upload</button>
-    </form>
+        <h3 class="font-semibold text-green-600 mt-4 mb-2">Sample Rows</h3>
+        <div class="overflow-x-auto">
+          <table class="min-w-full border border-gray-200 bg-white rounded-lg">
+            <thead>
+              <tr>
+                <th class="px-4 py-2 border-b">Title</th>
+                <th class="px-4 py-2 border-b">Description</th>
+                <th class="px-4 py-2 border-b">URL</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in preview_data.sample_rows %}
+                <tr>
+                  <td class="px-4 py-2 border-b">{{ row.title }}</td>
+                  <td class="px-4 py-2 border-b">{{ row.description }}</td>
+                  <td class="px-4 py-2 border-b">{{ row.url }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <form method="post">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="site_label" value="{{ preview_data.site_label }}">
+          <input type="hidden" name="is_my_site" value="{{ preview_data.is_my_site|int }}">
+          <input type="hidden" name="pages_json" value='{{ preview_data.pages_json|tojson|safe }}'>
+          <input type="hidden" name="field_map_json" value='{{ preview_data.field_map_json|tojson|safe }}'>
+          <input type="hidden" name="confirm" value="1">
+          <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 mt-4">Confirm & Save</button>
+        </form>
+      </div>
+    {% else %}
+      <form method="post" enctype="multipart/form-data" class="bg-white rounded-lg shadow p-6">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div class="mb-4">
+              <label for="site_label" class="block text-sm font-medium text-gray-700 mb-1">Site Label</label>
+              <input type="text" id="site_label" name="site_label" class="form-input w-full border border-gray-300 rounded px-3 py-2" required>
+          </div>
+          <div class="mb-4">
+              <label for="csv_file" class="block text-sm font-medium text-gray-700 mb-1">CSV File</label>
+              <input type="file" id="csv_file" name="csv_file" accept=".csv" class="form-input w-full border border-gray-300 rounded px-3 py-2" required>
+          </div>
+          <div class="mb-4 flex items-center">
+              <input type="checkbox" id="is_my_site" name="is_my_site" class="mr-2">
+              <label for="is_my_site" class="text-sm text-gray-700">Flag as My Site</label>
+          </div>
+          <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Upload</button>
+      </form>
+    {% endif %}
 </div>
 {% endblock %} 

@@ -30,7 +30,8 @@
                         {{ topic.name }}
                     </td>
                     {% for site in sites %}
-                        {% set count = topic_site_counts[topic.path|tuple][site.site_id] %}
+                        {% set path_key = topic.path | join('-') %}
+                        {% set count = topic_site_counts[path_key][site.site_id] %}
                         <td class="px-4 py-2">
                             {% if count > 0 %}
                                 <button type="button" class="text-green-700 underline hover:text-green-900 matched-pages-btn" data-topic="{{ topic.path|join('-') }}" data-site="{{ site.site_id }}">{{ count }}</button>
@@ -44,7 +45,8 @@
                     <td colspan="{{ sites|length + 1 }}" class="bg-green-50 px-4 py-2">
                         <div class="flex flex-wrap gap-8">
                         {% for site in sites %}
-                            {% set matches = topic_site_pages[topic.path|tuple][site.site_id] %}
+                            {% set path_key = topic.path | join('-') %}
+                            {% set matches = topic_site_pages[path_key][site.site_id] %}
                             {% if matches and matches|length > 0 %}
                                 <div>
                                     <div class="font-semibold mb-1">{{ site.label }}</div>
