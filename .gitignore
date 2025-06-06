@@ -18,7 +18,11 @@ instance/
 *.tmp
 
 #Ignore test files
-*test*
+test_*
+*_test.py
+*_test.pyc
+*_tests.py
+*_tests.pyc
 
 # Ignore migration cache and compiled files
 **/__pycache__/
