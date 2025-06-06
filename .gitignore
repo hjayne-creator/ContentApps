@@ -17,6 +17,9 @@ instance/
 *.bak
 *.tmp
 
+#Ignore test files
+*test*
+
 # Ignore migration cache and compiled files
 **/__pycache__/
 **/*.pyc
