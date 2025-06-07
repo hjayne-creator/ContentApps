@@ -140,6 +140,9 @@
             if (!ml0) {
                 ml0 = document.createElement('div');
                 ml0.className = 'ml-0';
+                // Move any existing .mb-4 children into ml0
+                const existingChildren = Array.from(childDiv.children).filter(c => c.classList.contains('mb-4'));
+                existingChildren.forEach(c => ml0.appendChild(c));
                 childDiv.appendChild(ml0);
             }
             const idx = ml0.children.length;

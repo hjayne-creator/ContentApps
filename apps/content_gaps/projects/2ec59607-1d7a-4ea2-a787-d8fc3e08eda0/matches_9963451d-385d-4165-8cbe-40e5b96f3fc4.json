@@ -1,0 +1,419 @@
+[
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 0,
+    "matched_topics": [
+      [
+        "0"
+      ]
+    ],
+    "similarity_scores": [
+      0.5250089864472762
+    ]
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 1,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 2,
+    "matched_topics": [
+      [
+        "0"
+      ],
+      [
+        "0",
+        "0"
+      ]
+    ],
+    "similarity_scores": [
+      0.5493288868133412,
+      0.536270253192116
+    ]
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 3,
+    "matched_topics": [
+      [
+        "0",
+        "0"
+      ],
+      [
+        "0",
+        "0",
+        "2"
+      ]
+    ],
+    "similarity_scores": [
+      0.5150475808011191,
+      0.5474478342763202
+    ]
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 4,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 5,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 6,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 7,
+    "matched_topics": [
+      [
+        "0"
+      ],
+      [
+        "0",
+        "2"
+      ]
+    ],
+    "similarity_scores": [
+      0.5359355718331571,
+      0.5996786896257721
+    ]
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 8,
+    "matched_topics": [
+      [
+        "0"
+      ]
+    ],
+    "similarity_scores": [
+      0.5788985677621155
+    ]
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 9,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 10,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 11,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 12,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 13,
+    "matched_topics": [
+      [
+        "0"
+      ]
+    ],
+    "similarity_scores": [
+      0.51543900169188
+    ]
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 14,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 15,
+    "matched_topics": [
+      [
+        "0"
+      ]
+    ],
+    "similarity_scores": [
+      0.5222103231652326
+    ]
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 16,
+    "matched_topics": [
+      [
+        "0"
+      ]
+    ],
+    "similarity_scores": [
+      0.553261722112248
+    ]
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 17,
+    "matched_topics": [
+      [
+        "0",
+        "1",
+        "3"
+      ]
+    ],
+    "similarity_scores": [
+      0.5611407609119049
+    ]
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 18,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 19,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 20,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 21,
+    "matched_topics": [
+      [
+        "0"
+      ],
+      [
+        "0",
+        "1",
+        "3"
+      ]
+    ],
+    "similarity_scores": [
+      0.5250011448411023,
+      0.5577838249330176
+    ]
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 22,
+    "matched_topics": [
+      [
+        "0"
+      ]
+    ],
+    "similarity_scores": [
+      0.5425980301978773
+    ]
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 23,
+    "matched_topics": [
+      [
+        "0"
+      ]
+    ],
+    "similarity_scores": [
+      0.5251948912963741
+    ]
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 24,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "65afb424-bf3e-4fb2-967d-11dcd0b44679",
+    "page_index": 0,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "65afb424-bf3e-4fb2-967d-11dcd0b44679",
+    "page_index": 1,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "65afb424-bf3e-4fb2-967d-11dcd0b44679",
+    "page_index": 2,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "65afb424-bf3e-4fb2-967d-11dcd0b44679",
+    "page_index": 3,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "8666438d-fbca-4152-81c4-0e4b5e3952aa",
+    "page_index": 0,
+    "matched_topics": [
+      [
+        "0",
+        "1"
+      ]
+    ],
+    "similarity_scores": [
+      0.5302599555930447
+    ]
+  },
+  {
+    "site_id": "8666438d-fbca-4152-81c4-0e4b5e3952aa",
+    "page_index": 1,
+    "matched_topics": [
+      [
+        "0",
+        "1"
+      ]
+    ],
+    "similarity_scores": [
+      0.5015342648140362
+    ]
+  },
+  {
+    "site_id": "8666438d-fbca-4152-81c4-0e4b5e3952aa",
+    "page_index": 2,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "8666438d-fbca-4152-81c4-0e4b5e3952aa",
+    "page_index": 3,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "8666438d-fbca-4152-81c4-0e4b5e3952aa",
+    "page_index": 4,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "8666438d-fbca-4152-81c4-0e4b5e3952aa",
+    "page_index": 5,
+    "matched_topics": [
+      [
+        "0",
+        "2"
+      ]
+    ],
+    "similarity_scores": [
+      0.5299168908522534
+    ]
+  },
+  {
+    "site_id": "8666438d-fbca-4152-81c4-0e4b5e3952aa",
+    "page_index": 6,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "8666438d-fbca-4152-81c4-0e4b5e3952aa",
+    "page_index": 7,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "8666438d-fbca-4152-81c4-0e4b5e3952aa",
+    "page_index": 8,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "8666438d-fbca-4152-81c4-0e4b5e3952aa",
+    "page_index": 9,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "8666438d-fbca-4152-81c4-0e4b5e3952aa",
+    "page_index": 10,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "8666438d-fbca-4152-81c4-0e4b5e3952aa",
+    "page_index": 11,
+    "matched_topics": [
+      [
+        "0"
+      ]
+    ],
+    "similarity_scores": [
+      0.5150797806684656
+    ]
+  },
+  {
+    "site_id": "8666438d-fbca-4152-81c4-0e4b5e3952aa",
+    "page_index": 12,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "8666438d-fbca-4152-81c4-0e4b5e3952aa",
+    "page_index": 13,
+    "matched_topics": [
+      [
+        "0"
+      ],
+      [
+        "0",
+        "0"
+      ],
+      [
+        "0",
+        "1"
+      ]
+    ],
+    "similarity_scores": [
+      0.5464183662319149,
+      0.5148435538101375,
+      0.600798484868055
+    ]
+  },
+  {
+    "site_id": "8666438d-fbca-4152-81c4-0e4b5e3952aa",
+    "page_index": 14,
+    "matched_topics": [
+      [
+        "0"
+      ],
+      [
+        "0",
+        "1",
+        "0",
+        "3"
+      ]
+    ],
+    "similarity_scores": [
+      0.5071253732550298,
+      0.5592519504091271
+    ]
+  }
+]

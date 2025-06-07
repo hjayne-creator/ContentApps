@@ -25,4 +25,5 @@ celery = make_celery(flask_app)
 import apps.content_plan.tasks
 import apps.topic_competitors.celery_tasks
 import apps.content_briefs.tasks.generate_brief
+import apps.content_gaps.tasks
 # Add any other task modules here as needed 

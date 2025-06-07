@@ -12,7 +12,8 @@ load_dotenv()
 content_gaps_bp = Blueprint('content_gaps', __name__,
     template_folder='templates',
     static_folder='static',
-    static_url_path='/apps/content-gaps/static')
+    static_url_path='/apps/content-gaps/static',
+    url_prefix='/apps/content-gaps')
 
 PROJECTS_DIR = os.path.join(os.path.dirname(__file__), 'projects')
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
@@ -110,9 +111,23 @@ def view_project(project_id):
     project = None
     topic_trees = []
     sites = []
+    
+    # Load project settings with error handling
     if os.path.isfile(settings_path):
-        with open(settings_path) as f:
-            project = json.load(f)
+        try:
+            with open(settings_path) as f:
+                content = f.read().strip()
+                if content:  # Only try to parse if file has content
+                    project = json.loads(content)
+                else:
+                    project = {'project_id': project_id, 'project_name': 'Untitled Project'}
+        except json.JSONDecodeError:
+            # If JSON is invalid, create a basic project object
+            project = {'project_id': project_id, 'project_name': 'Untitled Project'}
+        except Exception as e:
+            flash(f'Error loading project settings: {str(e)}', 'error')
+            project = {'project_id': project_id, 'project_name': 'Untitled Project'}
+    
     # Find all topic_tree_*.json files
     if os.path.isdir(project_dir):
         for fname in os.listdir(project_dir):
@@ -121,10 +136,14 @@ def view_project(project_id):
                 try:
                     with open(tree_path) as tf:
                         tree_data = json.load(tf)
+                    tree_id = tree_data.get('tree_id')
+                    # Check if a report exists for this tree
+                    has_report = os.path.exists(os.path.join(project_dir, f'matches_{tree_id}.json'))
                     topic_trees.append({
-                        'tree_id': tree_data.get('tree_id'),
+                        'tree_id': tree_id,
                         'tree_name': tree_data.get('tree_name'),
-                        'root_topic': tree_data.get('root_topic')
+                        'root_topic': tree_data.get('root_topic'),
+                        'has_report': has_report
                     })
                 except Exception:
                     continue
@@ -202,7 +221,7 @@ def edit_topic_tree(project_id, tree_id):
             flash('Could not load topic tree data.')
     else:
         flash('Topic tree not found.')
-    return render_template('topic_tree_edit_h.html', project_id=project_id, tree_id=tree_id, tree_data=tree_data)
+    return render_template('topic_tree_edit_v.html', project_id=project_id, tree_id=tree_id, tree_data=tree_data)
 
 @content_gaps_bp.route('/projects/<project_id>/topic-trees/<tree_id>/edit-vertical', methods=['GET', 'POST'])
 def edit_topic_tree_vertical(project_id, tree_id):
@@ -247,7 +266,7 @@ def upload_site_content(project_id):
         # Step 1: Confirm and save
         if request.form.get('confirm') == '1':
             site_label = request.form.get('site_label', '').strip()
-            is_my_site = bool(request.form.get('is_my_site'))
+            is_my_site = request.form.get('is_my_site') == 'on'
             try:
                 pages_json = request.form.get('pages_json')
                 field_map_json = request.form.get('field_map_json')
@@ -274,7 +293,7 @@ def upload_site_content(project_id):
         # Step 2: Mapping form submit
         elif request.form.get('mapping_confirm') == '1':
             site_label = request.form.get('site_label', '').strip()
-            is_my_site = bool(request.form.get('is_my_site'))
+            is_my_site = request.form.get('is_my_site') == 'on'
             # Get mapping from form
             title_col = request.form.get('title_column')
             desc_col = request.form.get('description_column')
@@ -291,8 +310,11 @@ def upload_site_content(project_id):
                 csv_reader = csv.DictReader((line.decode('utf-8') for line in file.stream), skipinitialspace=True)
                 pages = []
                 for row in csv_reader:
+                    title = row.get(title_col, '').strip()
+                    if not title:  # Skip rows with empty titles
+                        continue
                     pages.append({
-                        'title': row.get(title_col, ''),
+                        'title': title,
                         'description': row.get(desc_col, ''),
                         'url': row.get(url_col, '')
                     })
@@ -313,7 +335,7 @@ def upload_site_content(project_id):
                 return render_template('site_upload.html', project_id=project_id)
         # Step 3: Initial upload, try auto-detect
         site_label = request.form.get('site_label', '').strip()
-        is_my_site = bool(request.form.get('is_my_site'))
+        is_my_site = request.form.get('is_my_site') == 'on'
         file = request.files.get('csv_file')
         if not site_label or not file:
             flash('Site label and CSV file are required.', 'error')
@@ -348,8 +370,11 @@ def upload_site_content(project_id):
             # If auto-detect succeeded, parse as before
             pages = []
             for row in csv_reader:
+                title = row.get(field_map['title'], '').strip()
+                if not title:  # Skip rows with empty titles
+                    continue
                 pages.append({
-                    'title': row.get(field_map['title'], ''),
+                    'title': title,
                     'description': row.get(field_map['description'], ''),
                     'url': row.get(field_map['url'], '')
                 })
@@ -371,29 +396,36 @@ def upload_site_content(project_id):
 
 @content_gaps_bp.route('/projects/<project_id>/run-matching', methods=['POST'])
 def run_topic_matching(project_id):
-    project_dir = os.path.join(PROJECTS_DIR, project_id)
     topic_tree_id = request.form.get('topic_tree_id')
-    # Find topic tree (by ID if provided, else use first)
-    topic_tree_files = [f for f in os.listdir(project_dir) if f.startswith('topic_tree_') and f.endswith('.json')]
-    tree_path = None
-    if topic_tree_id:
-        for f in topic_tree_files:
-            if topic_tree_id in f:
-                tree_path = os.path.join(project_dir, f)
-                break
-    if not tree_path and topic_tree_files:
-        tree_path = os.path.join(project_dir, topic_tree_files[0])
-    if not tree_path:
-        flash('No topic tree found for this project.')
+    if not topic_tree_id:
+        flash('Topic tree ID is required.', 'error')
         return redirect(url_for('content_gaps.view_project', project_id=project_id))
+        
+    # Start the background task
+    from .tasks import run_topic_matching_task
+    task = run_topic_matching_task.delay(project_id, request.user.id if hasattr(request, 'user') else None, topic_tree_id)
+    
+    flash('Topic matching has started in the background. This may take several minutes to complete.', 'info')
+    return redirect(url_for('content_gaps.view_project', project_id=project_id))
+
+def _run_topic_matching_impl(project_id, user_id=None, topic_tree_id=None):
+    project_dir = os.path.join(PROJECTS_DIR, project_id)
+    if not topic_tree_id:
+        raise ValueError("Topic tree ID is required")
+        
+    # Find topic tree
+    tree_path = os.path.join(project_dir, f'topic_tree_{topic_tree_id}.json')
+    if not os.path.exists(tree_path):
+        raise ValueError(f"Topic tree {topic_tree_id} not found")
+        
     try:
         with open(tree_path) as f:
             tree_data = json.load(f)
         topic_tree = tree_data.get('tree', [])
         tree_id = tree_data.get('tree_id')
     except Exception as e:
-        flash(f'Error loading topic tree: {e}')
-        return redirect(url_for('content_gaps.view_project', project_id=project_id))
+        raise ValueError(f'Error loading topic tree: {e}')
+
     # Load all sites
     site_files = [f for f in os.listdir(project_dir) if f.startswith('site_') and f.endswith('.json')]
     sites = []
@@ -411,8 +443,8 @@ def run_topic_matching(project_id):
         except Exception:
             continue
     if not sites:
-        flash('No site data found for this project.')
-        return redirect(url_for('content_gaps.view_project', project_id=project_id))
+        raise ValueError('No site data found for this project.')
+
     # Flatten topic tree to (path, name) list
     def flatten_tree(nodes, parent_path=None):
         if parent_path is None:
@@ -425,6 +457,7 @@ def run_topic_matching(project_id):
                 flat.extend(flatten_tree(node['children'], path))
         return flat
     flat_topics = flatten_tree(topic_tree)
+
     # Use OpenAI Embeddings if available
     use_embeddings = bool(OPENAI_API_KEY)
     embedding_cache = {}
@@ -442,10 +475,12 @@ def run_topic_matching(project_id):
             return emb
         except Exception:
             return None
+
     def cosine_sim(a, b):
         if a is None or b is None:
             return 0.0
         return float(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)))
+
     # Matching
     matches = []
     threshold = 0.5 if use_embeddings else 0.2  # Lower threshold for keyword matching
@@ -493,15 +528,14 @@ def run_topic_matching(project_id):
                 'matched_topics': matched_topics,
                 'similarity_scores': similarity_scores
             })
+
     # Save results
     try:
         with open(os.path.join(project_dir, f'matches_{tree_id}.json'), 'w') as f:
             json.dump(matches, f, indent=2)
-        flash('Topic matching complete.', 'success')
-        return redirect(url_for('content_gaps.compare_view', project_id=project_id, tree_id=tree_id))
+        return {'status': 'success', 'matches_file': f'matches_{tree_id}.json'}
     except Exception as e:
-        flash(f'Error saving matches: {e}')
-        return redirect(url_for('content_gaps.view_project', project_id=project_id))
+        raise ValueError(f'Error saving matches: {e}')
 
 @content_gaps_bp.route('/projects/<project_id>/compare/<tree_id>')
 def compare_view(project_id, tree_id):
@@ -567,3 +601,49 @@ def compare_view(project_id, tree_id):
         topic_site_counts=topic_site_counts,
         topic_site_pages=topic_site_pages,
     )
+
+@content_gaps_bp.route('/projects/<project_id>/task-status')
+def task_status(project_id):
+    """Get the current status of the topic matching task"""
+    project_dir = os.path.join(PROJECTS_DIR, project_id)
+    settings_path = os.path.join(project_dir, 'settings.json')
+    
+    if not os.path.exists(settings_path):
+        return {'status': 'NOT_FOUND', 'error_message': 'Project not found'}, 404
+        
+    try:
+        with open(settings_path) as f:
+            settings = json.load(f)
+            
+        task_status = settings.get('task_status', {})
+        jobs = settings.get('jobs', [])
+        
+        return {
+            'status': task_status.get('status', 'UNKNOWN'),
+            'error_message': task_status.get('error_message'),
+            'compare_url': task_status.get('compare_url'),
+            'job_id': task_status.get('job_id'),
+            'jobs': jobs
+        }
+    except Exception as e:
+        return {'status': 'ERROR', 'error_message': str(e)}, 500
+
+@content_gaps_bp.route('/projects/<project_id>/delete-site', methods=['POST'])
+def delete_site(project_id):
+    try:
+        data = request.get_json()
+        site_id = data.get('site_id')
+        if not site_id:
+            return {'error': 'Site ID is required'}, 400
+            
+        project_dir = os.path.join(PROJECTS_DIR, project_id)
+        site_path = os.path.join(project_dir, f'site_{site_id}.json')
+        
+        if os.path.exists(site_path):
+            os.remove(site_path)
+            return {'status': 'success'}, 200
+        else:
+            return {'error': 'Site not found'}, 404
+            
+    except Exception as e:
+        return {'error': str(e)}, 500

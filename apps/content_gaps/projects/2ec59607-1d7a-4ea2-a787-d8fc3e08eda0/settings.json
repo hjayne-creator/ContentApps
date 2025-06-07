@@ -1,6 +1,15 @@
 {
   "project_id": "2ec59607-1d7a-4ea2-a787-d8fc3e08eda0",
-  "project_name": "test-project-Rellify",
+  "project_name": "Rellify",
   "primary_url": "https://rellify.com/",
-  "is_my_site": true
+  "is_my_site": true,
+  "task_status": {
+    "status": "COMPLETED",
+    "error_message": null,
+    "compare_url": "/apps/content-gaps/projects/2ec59607-1d7a-4ea2-a787-d8fc3e08eda0/compare/9963451d-385d-4165-8cbe-40e5b96f3fc4",
+    "job_id": "3d79e09d-1b7a-4071-9787-d5bca63be26a"
+  },
+  "jobs": [
+
+  ]
 }

@@ -13,7 +13,7 @@
             <thead>
                 <tr>
                     <th class="px-4 py-2 text-left bg-green-50 border-b border-gray-200">Topic</th>
-                    {% for site in sites %}
+                    {% for site in sites|sort(attribute='is_my_site', reverse=true) %}
                         <th class="px-4 py-2 text-left bg-green-50 border-b border-gray-200">
                             <span class="font-semibold">{{ site.label }}</span>
                             {% if site.is_my_site %}
@@ -29,7 +29,7 @@
                     <td class="px-4 py-2 {{ indent_class(topic.path|length) }}">
                         {{ topic.name }}
                     </td>
-                    {% for site in sites %}
+                    {% for site in sites|sort(attribute='is_my_site', reverse=true) %}
                         {% set path_key = topic.path | join('-') %}
                         {% set count = topic_site_counts[path_key][site.site_id] %}
                         <td class="px-4 py-2">
@@ -44,7 +44,7 @@
                 <tr class="matched-pages-row hidden" id="matched-{{ topic.path|join('-') }}">
                     <td colspan="{{ sites|length + 1 }}" class="bg-green-50 px-4 py-2">
                         <div class="flex flex-wrap gap-8">
-                        {% for site in sites %}
+                        {% for site in sites|sort(attribute='is_my_site', reverse=true) %}
                             {% set path_key = topic.path | join('-') %}
                             {% set matches = topic_site_pages[path_key][site.site_id] %}
                             {% if matches and matches|length > 0 %}
