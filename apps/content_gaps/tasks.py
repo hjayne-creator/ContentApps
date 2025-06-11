@@ -7,7 +7,7 @@ from flask import url_for
 from flask import current_app
 import datetime
 
-@shared_task(name='content_gaps.run_topic_matching')
+@shared_task(name='apps.content_gaps.run_topic_matching')
 def run_topic_matching_task(project_id, user_id, topic_tree_id):
     """
     Celery task wrapper for run_topic_matching function.
