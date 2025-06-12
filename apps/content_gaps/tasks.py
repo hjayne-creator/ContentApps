@@ -75,14 +75,6 @@ def update_task_status(project_id, status, error_message=None, compare_url=None,
         # Keep only the last 10 jobs
         settings['jobs'] = settings['jobs'][-10:]
         
-        # Also update current task status for backward compatibility
-        settings['task_status'] = {
-            'status': status,
-            'error_message': error_message,
-            'compare_url': compare_url,
-            'job_id': job['job_id']
-        }
-        
         with open(settings_path, 'w') as f:
             json.dump(settings, f, indent=2)
     except Exception as e:

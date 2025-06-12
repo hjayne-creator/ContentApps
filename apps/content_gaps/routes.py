@@ -623,14 +623,16 @@ def task_status(project_id):
         with open(settings_path) as f:
             settings = json.load(f)
             
-        task_status = settings.get('task_status', {})
         jobs = settings.get('jobs', [])
         
+        # Get the most recent job for current status
+        current_job = jobs[-1] if jobs else None
+        
         return {
-            'status': task_status.get('status', 'UNKNOWN'),
-            'error_message': task_status.get('error_message'),
-            'compare_url': task_status.get('compare_url'),
-            'job_id': task_status.get('job_id'),
+            'status': current_job['status'] if current_job else 'UNKNOWN',
+            'error_message': current_job.get('error_message') if current_job else None,
+            'compare_url': current_job.get('compare_url') if current_job else None,
+            'job_id': current_job['job_id'] if current_job else None,
             'jobs': jobs
         }
     except Exception as e:
