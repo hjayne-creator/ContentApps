@@ -23,6 +23,20 @@
       "error_message": null,
       "compare_url": "/apps/content-gaps/projects/2ec59607-1d7a-4ea2-a787-d8fc3e08eda0/compare/ea3b3a65-cbb9-4bb1-9214-10d3f1c194ea",
       "created_at": "2025-06-12 00:51:23.111913"
+    },
+    {
+      "job_id": "d5d37f32-7549-4394-bbaf-13e361edbed6",
+      "status": "COMPLETED",
+      "error_message": null,
+      "compare_url": "/apps/content-gaps/projects/2ec59607-1d7a-4ea2-a787-d8fc3e08eda0/compare/ea3b3a65-cbb9-4bb1-9214-10d3f1c194ea",
+      "created_at": "2025-06-12 02:08:55.519326"
+    },
+    {
+      "job_id": "883bec85-353f-40a5-98ff-5ab1e5b1c530",
+      "status": "COMPLETED",
+      "error_message": null,
+      "compare_url": "/apps/content-gaps/projects/2ec59607-1d7a-4ea2-a787-d8fc3e08eda0/compare/ea3b3a65-cbb9-4bb1-9214-10d3f1c194ea",
+      "created_at": "2025-06-12 02:09:54.744917"
     }
   ]
 }

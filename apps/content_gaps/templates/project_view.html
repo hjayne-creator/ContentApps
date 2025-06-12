@@ -216,27 +216,44 @@ document.addEventListener('DOMContentLoaded', function() {
                     `;
                     runMatchingBtn.disabled = true;
                     runMatchingBtn.classList.add('opacity-50');
-                } else if (data.status === 'COMPLETED' && jobs.length > 0 && jobs[0].status === 'COMPLETED') {
-                    // Check if the job was completed within the last 30 seconds
-                    const jobCompletionTime = new Date(jobs[0].created_at);
-                    const now = new Date();
-                    const timeSinceCompletion = (now - jobCompletionTime) / 1000; // Convert to seconds
-                    
-                    if (timeSinceCompletion <= 30) {
-                        // Only show completion message if job was completed recently
-                        taskStatus.classList.remove('hidden');
-                        taskStatus.innerHTML = '<div class="text-green-600">Analysis completed successfully!</div>';
-                    } else {
-                        // Hide status message if job is older than 30 seconds
-                        taskStatus.classList.add('hidden');
+                } else if (data.status === 'COMPLETED' && jobs.length > 0) {
+                    const mostRecentJob = jobs[0];
+                    if (mostRecentJob.status === 'COMPLETED') {
+                        // Check if the job was completed within the last 30 seconds
+                        const jobCompletionTime = new Date(mostRecentJob.created_at);
+                        const now = new Date();
+                        const timeSinceCompletion = (now - jobCompletionTime) / 1000; // Convert to seconds
+                        
+                        if (timeSinceCompletion <= 30) {
+                            // Only show completion message if job was completed recently
+                            taskStatus.classList.remove('hidden');
+                            taskStatus.innerHTML = '<div class="text-green-600">Analysis completed successfully!</div>';
+                            // Clear the status message after 5 seconds
+                            setTimeout(() => {
+                                taskStatus.classList.add('hidden');
+                            }, 5000);
+                        } else {
+                            // Hide status message if job is older than 30 seconds
+                            taskStatus.classList.add('hidden');
+                        }
                     }
                     runMatchingBtn.disabled = false;
                     runMatchingBtn.classList.remove('opacity-50');
+                    // Stop polling once the job is completed
+                    if (statusCheckInterval) {
+                        clearInterval(statusCheckInterval);
+                        statusCheckInterval = null;
+                    }
                 } else if (data.status === 'FAILED') {
                     taskStatus.classList.remove('hidden');
                     taskStatus.innerHTML = `<div class="text-red-600">Analysis failed: ${data.error_message || 'Unknown error'}</div>`;
                     runMatchingBtn.disabled = false;
                     runMatchingBtn.classList.remove('opacity-50');
+                    // Stop polling if the job failed
+                    if (statusCheckInterval) {
+                        clearInterval(statusCheckInterval);
+                        statusCheckInterval = null;
+                    }
                 } else {
                     // Hide status message if no job is running or completed
                     taskStatus.classList.add('hidden');
@@ -246,6 +263,11 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(error => {
                 console.error('Error updating jobs table:', error);
+                // Stop polling on error
+                if (statusCheckInterval) {
+                    clearInterval(statusCheckInterval);
+                    statusCheckInterval = null;
+                }
             });
     }
 
