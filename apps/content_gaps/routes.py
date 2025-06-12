@@ -11,8 +11,6 @@ from .models import ContentGapsJob, TopicTree, Site, Match, db, Project
 from io import TextIOWrapper
 load_dotenv()
 
-# Use absolute path for projects directory
-PROJECTS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), 'projects'))
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
 OPENAI_MODEL = os.getenv('OPENAI_MODEL', 'gpt-4o')
 
