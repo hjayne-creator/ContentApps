@@ -15,4 +15,5 @@ class Config:
     REDDIT_USERNAME = os.getenv('REDDIT_USERNAME', '')
     REDDIT_PASSWORD = os.getenv('REDDIT_PASSWORD', '')
     BRIEFS_DIR = os.getenv('BRIEFS_DIR', 'briefs')
-    OPENAI_MODEL = os.getenv('OPENAI_MODEL', 'gpt-4o')
+    OPENAI_MODEL = os.getenv('OPENAI_MODEL', 'gpt-4.1')
+    

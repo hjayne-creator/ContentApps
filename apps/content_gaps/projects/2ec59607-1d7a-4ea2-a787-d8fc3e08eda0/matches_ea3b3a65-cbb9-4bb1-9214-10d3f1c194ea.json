@@ -1,0 +1,430 @@
+[
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 0,
+    "matched_topics": [
+      [
+        "0"
+      ]
+    ],
+    "similarity_scores": [
+      0.5157954276668648
+    ]
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 1,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 2,
+    "matched_topics": [
+      [
+        "0"
+      ]
+    ],
+    "similarity_scores": [
+      0.5741664507592265
+    ]
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 3,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 4,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 5,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 6,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 7,
+    "matched_topics": [
+      [
+        "0"
+      ],
+      [
+        "0",
+        "2"
+      ]
+    ],
+    "similarity_scores": [
+      0.5159235761336579,
+      0.5996650727621077
+    ]
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 8,
+    "matched_topics": [
+      [
+        "0"
+      ],
+      [
+        "0",
+        "2",
+        "0"
+      ]
+    ],
+    "similarity_scores": [
+      0.5473115035059292,
+      0.5102950005682148
+    ]
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 9,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 10,
+    "matched_topics": [
+      [
+        "0",
+        "6",
+        "2"
+      ]
+    ],
+    "similarity_scores": [
+      0.5161766644311361
+    ]
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 11,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 12,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 13,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 14,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 15,
+    "matched_topics": [
+      [
+        "0"
+      ]
+    ],
+    "similarity_scores": [
+      0.5231523479100496
+    ]
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 16,
+    "matched_topics": [
+      [
+        "0"
+      ]
+    ],
+    "similarity_scores": [
+      0.5351686571753996
+    ]
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 17,
+    "matched_topics": [
+      [
+        "0",
+        "6",
+        "2"
+      ],
+      [
+        "0",
+        "7"
+      ]
+    ],
+    "similarity_scores": [
+      0.5525095979850805,
+      0.5611523946380783
+    ]
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 18,
+    "matched_topics": [
+      [
+        "0"
+      ]
+    ],
+    "similarity_scores": [
+      0.5061502909497304
+    ]
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 19,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 20,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 21,
+    "matched_topics": [
+      [
+        "0"
+      ],
+      [
+        "0",
+        "6",
+        "2"
+      ],
+      [
+        "0",
+        "7"
+      ]
+    ],
+    "similarity_scores": [
+      0.5044320761109383,
+      0.5511207376329137,
+      0.5577965863230594
+    ]
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 22,
+    "matched_topics": [
+      [
+        "0"
+      ]
+    ],
+    "similarity_scores": [
+      0.524724365756414
+    ]
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 23,
+    "matched_topics": [
+      [
+        "0"
+      ]
+    ],
+    "similarity_scores": [
+      0.5045351908906567
+    ]
+  },
+  {
+    "site_id": "25ef60cc-03af-4c0a-acf8-e4419b2225cc",
+    "page_index": 24,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "65afb424-bf3e-4fb2-967d-11dcd0b44679",
+    "page_index": 0,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "65afb424-bf3e-4fb2-967d-11dcd0b44679",
+    "page_index": 1,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "65afb424-bf3e-4fb2-967d-11dcd0b44679",
+    "page_index": 2,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "65afb424-bf3e-4fb2-967d-11dcd0b44679",
+    "page_index": 3,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "8666438d-fbca-4152-81c4-0e4b5e3952aa",
+    "page_index": 0,
+    "matched_topics": [
+      [
+        "0",
+        "1"
+      ]
+    ],
+    "similarity_scores": [
+      0.530356893560566
+    ]
+  },
+  {
+    "site_id": "8666438d-fbca-4152-81c4-0e4b5e3952aa",
+    "page_index": 1,
+    "matched_topics": [
+      [
+        "0",
+        "1"
+      ]
+    ],
+    "similarity_scores": [
+      0.5014271396603871
+    ]
+  },
+  {
+    "site_id": "8666438d-fbca-4152-81c4-0e4b5e3952aa",
+    "page_index": 2,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "8666438d-fbca-4152-81c4-0e4b5e3952aa",
+    "page_index": 3,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "8666438d-fbca-4152-81c4-0e4b5e3952aa",
+    "page_index": 4,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "8666438d-fbca-4152-81c4-0e4b5e3952aa",
+    "page_index": 5,
+    "matched_topics": [
+      [
+        "0",
+        "2"
+      ]
+    ],
+    "similarity_scores": [
+      0.5298875295954855
+    ]
+  },
+  {
+    "site_id": "8666438d-fbca-4152-81c4-0e4b5e3952aa",
+    "page_index": 6,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "8666438d-fbca-4152-81c4-0e4b5e3952aa",
+    "page_index": 7,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "8666438d-fbca-4152-81c4-0e4b5e3952aa",
+    "page_index": 8,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "8666438d-fbca-4152-81c4-0e4b5e3952aa",
+    "page_index": 9,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "8666438d-fbca-4152-81c4-0e4b5e3952aa",
+    "page_index": 10,
+    "matched_topics": [],
+    "similarity_scores": []
+  },
+  {
+    "site_id": "8666438d-fbca-4152-81c4-0e4b5e3952aa",
+    "page_index": 11,
+    "matched_topics": [
+      [
+        "0"
+      ]
+    ],
+    "similarity_scores": [
+      0.5392480191168764
+    ]
+  },
+  {
+    "site_id": "8666438d-fbca-4152-81c4-0e4b5e3952aa",
+    "page_index": 12,
+    "matched_topics": [
+      [
+        "0"
+      ]
+    ],
+    "similarity_scores": [
+      0.5163182896949509
+    ]
+  },
+  {
+    "site_id": "8666438d-fbca-4152-81c4-0e4b5e3952aa",
+    "page_index": 13,
+    "matched_topics": [
+      [
+        "0"
+      ],
+      [
+        "0",
+        "1"
+      ],
+      [
+        "0",
+        "4"
+      ]
+    ],
+    "similarity_scores": [
+      0.5392287892506147,
+      0.6008138878002536,
+      0.5085527854536549
+    ]
+  },
+  {
+    "site_id": "8666438d-fbca-4152-81c4-0e4b5e3952aa",
+    "page_index": 14,
+    "matched_topics": [
+      [
+        "0"
+      ],
+      [
+        "0",
+        "1",
+        "4"
+      ]
+    ],
+    "similarity_scores": [
+      0.5215923115881991,
+      0.5592519504091271
+    ]
+  }
+]

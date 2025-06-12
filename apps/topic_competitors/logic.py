@@ -11,7 +11,7 @@ import time
 OPENAI_API_KEY = config('OPENAI_API_KEY')
 SERPAPI_API_KEY = config('SERPAPI_API_KEY')
 SEMRUSH_API_KEY = config('SEMRUSH_API_KEY')
-OPENAI_MODEL = config('OPENAI_MODEL', default='gpt-4o-mini')
+OPENAI_MODEL = config('OPENAI_MODEL', default='gpt-4.1')
 
 # Set up OpenAI
 try:
