@@ -43,6 +43,10 @@ def update_task_status(project_id, status, error_message=None, compare_url=None,
     settings_path = os.path.join(project_dir, 'settings.json')
     
     try:
+        # Ensure project directory exists
+        os.makedirs(project_dir, exist_ok=True)
+        
+        # Load existing settings or create new
         if os.path.exists(settings_path):
             with open(settings_path, 'r') as f:
                 settings = json.load(f)
@@ -75,7 +79,11 @@ def update_task_status(project_id, status, error_message=None, compare_url=None,
         # Keep only the last 10 jobs
         settings['jobs'] = settings['jobs'][-10:]
         
+        # Write settings file
         with open(settings_path, 'w') as f:
             json.dump(settings, f, indent=2)
+            
+        current_app.logger.info(f"Updated task status for job {job_id} to {status}")
     except Exception as e:
-        print(f"Error updating task status: {e}") 
+        current_app.logger.error(f"Error updating task status: {e}")
+        # Log the error but don't raise it to prevent task failure 

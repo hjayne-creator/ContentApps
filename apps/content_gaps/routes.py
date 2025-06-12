@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 import os
 import uuid
 import json
@@ -9,16 +9,16 @@ import numpy as np
 from dotenv import load_dotenv
 load_dotenv()
 
+# Use absolute path for projects directory
+PROJECTS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), 'projects'))
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
+OPENAI_MODEL = os.getenv('OPENAI_MODEL', 'gpt-4o')
+
 content_gaps_bp = Blueprint('content_gaps', __name__,
     template_folder='templates',
     static_folder='static',
     static_url_path='/apps/content-gaps/static',
     url_prefix='/apps/content-gaps')
-
-# Use absolute path for projects directory
-PROJECTS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), 'projects'))
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
-OPENAI_MODEL = os.getenv('OPENAI_MODEL', 'gpt-4o')
 
 def generate_topic_tree_llm(root_topic):
     if not OPENAI_API_KEY:
@@ -636,6 +636,7 @@ def task_status(project_id):
             'jobs': jobs
         }
     except Exception as e:
+        current_app.logger.error(f"Error getting task status: {e}")
         return {'status': 'ERROR', 'error_message': str(e)}, 500
 
 @content_gaps_bp.route('/projects/<project_id>/delete-site', methods=['POST'])
