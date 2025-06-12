@@ -5,7 +5,8 @@ def make_celery(app):
     celery = Celery(
         app.import_name,
         broker=app.config.get('CELERY_BROKER_URL', os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/0')),
-        backend=app.config.get('CELERY_RESULT_BACKEND', os.environ.get('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0'))
+        backend=app.config.get('CELERY_RESULT_BACKEND', os.environ.get('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')),
+        broker_connection_retry_on_startup=True
     )
     celery.conf.update(app.config)
     TaskBase = celery.Task
