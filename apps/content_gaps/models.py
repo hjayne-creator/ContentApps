@@ -1,8 +1,32 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import uuid
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, UniqueConstraint, JSON, Float
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
 
 db = SQLAlchemy()
+
+class Project(db.Model):
+    __tablename__ = 'content_gaps_projects'
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    project_name = Column(String(255), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    topic_trees = relationship('TopicTree', backref='project', lazy=True, cascade='all, delete-orphan')
+    sites = relationship('Site', backref='project', lazy=True, cascade='all, delete-orphan')
+    jobs = relationship('ContentGapsJob', backref='project', lazy=True, cascade='all, delete-orphan')
+    
+    def to_dict(self):
+        return {
+            'id': str(self.id),
+            'project_name': self.project_name,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
 
 class ContentGapsJob(db.Model):
     __tablename__ = 'content_gaps_jobs'
