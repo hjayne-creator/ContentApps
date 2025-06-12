@@ -15,7 +15,8 @@ content_gaps_bp = Blueprint('content_gaps', __name__,
     static_url_path='/apps/content-gaps/static',
     url_prefix='/apps/content-gaps')
 
-PROJECTS_DIR = os.path.join(os.path.dirname(__file__), 'projects')
+# Use absolute path for projects directory
+PROJECTS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), 'projects'))
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
 OPENAI_MODEL = os.getenv('OPENAI_MODEL', 'gpt-4o')
 
@@ -409,12 +410,18 @@ def run_topic_matching(project_id):
     return redirect(url_for('content_gaps.view_project', project_id=project_id))
 
 def _run_topic_matching_impl(project_id, user_id=None, topic_tree_id=None):
-    project_dir = os.path.join(PROJECTS_DIR, project_id)
+    # Use absolute path for project directory
+    project_dir = os.path.abspath(os.path.join(PROJECTS_DIR, project_id))
     if not topic_tree_id:
         raise ValueError("Topic tree ID is required")
         
     # Find topic tree
     tree_path = os.path.join(project_dir, f'topic_tree_{topic_tree_id}.json')
+    print(f"Looking for topic tree at: {tree_path}")
+    print(f"Directory contents: {os.listdir(project_dir) if os.path.exists(project_dir) else 'Directory not found'}")
+    print(f"File exists: {os.path.exists(tree_path)}")
+    print(f"File permissions: {oct(os.stat(tree_path).st_mode)[-3:] if os.path.exists(tree_path) else 'N/A'}")
+    
     if not os.path.exists(tree_path):
         raise ValueError(f"Topic tree {topic_tree_id} not found")
         
@@ -424,6 +431,7 @@ def _run_topic_matching_impl(project_id, user_id=None, topic_tree_id=None):
         topic_tree = tree_data.get('tree', [])
         tree_id = tree_data.get('tree_id')
     except Exception as e:
+        print(f"Error loading topic tree: {str(e)}")
         raise ValueError(f'Error loading topic tree: {e}')
 
     # Load all sites
