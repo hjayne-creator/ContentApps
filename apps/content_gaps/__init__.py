@@ -1,5 +1,2 @@
-import os
-
-# Base directory for the application
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# This file is intentionally empty as all initialization is handled by Flask-SQLAlchemy
 
