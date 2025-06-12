@@ -61,24 +61,14 @@ def generate_topic_tree_llm(root_topic):
 
 @content_gaps_bp.route('/')
 def index():
-    projects = []
-    if os.path.exists(PROJECTS_DIR):
-        for project_id in os.listdir(PROJECTS_DIR):
-            project_dir = os.path.join(PROJECTS_DIR, project_id)
-            settings_path = os.path.join(project_dir, 'settings.json')
-            if os.path.isdir(project_dir) and os.path.isfile(settings_path):
-                try:
-                    with open(settings_path) as f:
-                        settings = json.load(f)
-                    projects.append({
-                        'project_id': settings.get('project_id', project_id),
-                        'project_name': settings.get('project_name', 'Untitled'),
-                        'primary_url': settings.get('primary_url', ''),
-                        'is_my_site': settings.get('is_my_site', False)
-                    })
-                except Exception:
-                    continue
-    return render_template('content_gaps_index.html', projects=projects)
+    projects = Project.query.all()
+    projects_data = [{
+        'project_id': project.id,
+        'project_name': project.project_name,
+        'primary_url': project.primary_url,
+        'is_my_site': project.is_my_site
+    } for project in projects]
+    return render_template('content_gaps_index.html', projects=projects_data)
 
 @content_gaps_bp.route('/projects/new', methods=['GET', 'POST'])
 def create_project():
@@ -89,20 +79,19 @@ def create_project():
         if not project_name or not primary_url:
             flash('Project name and primary website URL are required.')
             return render_template('project_new.html')
-        project_id = str(uuid.uuid4())
-        project_dir = os.path.join(PROJECTS_DIR, project_id)
+        
         try:
-            os.makedirs(project_dir, exist_ok=True)
-            settings = {
-                'project_id': project_id,
-                'project_name': project_name,
-                'primary_url': primary_url,
-                'is_my_site': is_my_site
-            }
-            with open(os.path.join(project_dir, 'settings.json'), 'w') as f:
-                json.dump(settings, f, indent=2)
-            return redirect(url_for('content_gaps.view_project', project_id=project_id))
+            project = Project(
+                id=str(uuid.uuid4()),
+                project_name=project_name,
+                primary_url=primary_url,
+                is_my_site=is_my_site
+            )
+            db.session.add(project)
+            db.session.commit()
+            return redirect(url_for('content_gaps.view_project', project_id=project.id))
         except Exception as e:
+            db.session.rollback()
             flash(f'Error creating project: {e}')
             return render_template('project_new.html')
     return render_template('project_new.html')
@@ -203,32 +192,24 @@ def edit_topic_tree(project_id, tree_id):
 
 @content_gaps_bp.route('/projects/<project_id>/topic-trees/<tree_id>/edit-vertical', methods=['GET', 'POST'])
 def edit_topic_tree_vertical(project_id, tree_id):
-    project_dir = os.path.join(PROJECTS_DIR, project_id)
-    tree_path = os.path.join(project_dir, f'topic_tree_{tree_id}.json')
-    tree_data = {'tree_name': '', 'root_topic': '', 'tree': []}
+    topic_tree = TopicTree.query.filter_by(id=tree_id, project_id=project_id).first_or_404()
+    tree_data = {
+        'tree_name': topic_tree.tree_name,
+        'root_topic': topic_tree.root_topic,
+        'tree': topic_tree.tree_data
+    }
+    
     if request.method == 'POST':
         tree_json = request.form.get('tree_json', '')
         try:
             new_tree = json.loads(tree_json)
-            # Load existing data
-            if os.path.isfile(tree_path):
-                with open(tree_path) as f:
-                    tree_data = json.load(f)
-            tree_data['tree'] = new_tree
-            with open(tree_path, 'w') as f:
-                json.dump(tree_data, f, indent=2)
+            topic_tree.tree_data = new_tree
+            db.session.commit()
             flash('Tree saved successfully.', 'success')
         except Exception as e:
+            db.session.rollback()
             flash(f'Error saving tree: {e}')
-    # Always reload for display
-    if os.path.isfile(tree_path):
-        try:
-            with open(tree_path) as f:
-                tree_data = json.load(f)
-        except Exception:
-            flash('Could not load topic tree data.')
-    else:
-        flash('Topic tree not found.')
+    
     return render_template('topic_tree_edit_v.html', project_id=project_id, tree_id=tree_id, tree_data=tree_data)
 
 @content_gaps_bp.route('/projects/<project_id>/sites/upload', methods=['GET', 'POST'])
@@ -248,16 +229,15 @@ def upload_site_content(project_id):
             return redirect(request.url)
         
         try:
-            # Read CSV file
-            stream = TextIOWrapper(file.stream, encoding='utf-8-sig')
-            reader = csv.DictReader(stream)
+            csv_file = TextIOWrapper(file.stream, encoding='utf-8')
+            reader = csv.DictReader(csv_file)
             pages = []
             for row in reader:
-                if 'title' in row and row['title'].strip():
+                if 'url' in row and 'title' in row and 'description' in row:
                     pages.append({
-                        'title': row['title'].strip(),
-                        'description': row.get('description', '').strip(),
-                        'url': row.get('url', '').strip()
+                        'url': row['url'],
+                        'title': row['title'],
+                        'description': row['description']
                     })
             
             if not pages:
@@ -266,12 +246,12 @@ def upload_site_content(project_id):
             
             # Create new site in database
             site = Site(
+                id=str(uuid.uuid4()),
                 project_id=project_id,
                 label=file.filename.replace('.csv', ''),
-                is_my_site=request.form.get('is_my_site') == 'true',
+                is_my_site=False,
                 pages=pages
             )
-            
             db.session.add(site)
             db.session.commit()
             
@@ -280,10 +260,10 @@ def upload_site_content(project_id):
             
         except Exception as e:
             db.session.rollback()
-            flash(f'Error processing file: {str(e)}')
+            flash(f'Error processing file: {e}')
             return redirect(request.url)
-    
-    return render_template('upload_site.html', project_id=project_id)
+            
+    return render_template('site_upload.html', project_id=project_id)
 
 @content_gaps_bp.route('/projects/<project_id>/run-matching', methods=['POST'])
 def run_topic_matching(project_id):
@@ -497,26 +477,18 @@ def task_status(project_id):
 
 @content_gaps_bp.route('/projects/<project_id>/delete-site', methods=['POST'])
 def delete_site(project_id):
-    data = request.get_json()
-    site_id = data.get('site_id')
-    
+    site_id = request.form.get('site_id')
     if not site_id:
-        return jsonify({'status': 'error', 'error': 'Site ID is required'}), 400
+        flash('No site specified')
+        return redirect(url_for('content_gaps.view_project', project_id=project_id))
     
     try:
-        # Delete site from database
-        site = Site.query.filter_by(id=site_id, project_id=project_id).first()
-        if not site:
-            return jsonify({'status': 'error', 'error': 'Site not found'}), 404
-        
-        # Delete associated matches
-        Match.query.filter_by(project_id=project_id, site_id=site_id).delete()
-        
-        # Delete the site
+        site = Site.query.filter_by(id=site_id, project_id=project_id).first_or_404()
         db.session.delete(site)
         db.session.commit()
-        
-        return jsonify({'status': 'success'})
+        flash('Site deleted successfully')
     except Exception as e:
         db.session.rollback()
-        return jsonify({'status': 'error', 'error': str(e)}), 500
+        flash(f'Error deleting site: {e}')
+    
+    return redirect(url_for('content_gaps.view_project', project_id=project_id))
