@@ -7,6 +7,7 @@ import csv
 from werkzeug.utils import secure_filename
 import numpy as np
 from dotenv import load_dotenv
+from .models import ContentGapsJob
 load_dotenv()
 
 # Use absolute path for projects directory
@@ -129,6 +130,10 @@ def view_project(project_id):
             flash(f'Error loading project settings: {str(e)}', 'error')
             project = {'project_id': project_id, 'project_name': 'Untitled Project'}
     
+    # Get job statuses from database
+    jobs = ContentGapsJob.query.filter_by(project_id=project_id).order_by(ContentGapsJob.created_at.desc()).limit(10).all()
+    job_statuses = [job.to_dict() for job in jobs]
+    
     # Find all topic_tree_*.json files
     if os.path.isdir(project_dir):
         for fname in os.listdir(project_dir):
@@ -161,7 +166,7 @@ def view_project(project_id):
                     })
                 except Exception:
                     continue
-    return render_template('project_view.html', project_id=project_id, project=project, topic_trees=topic_trees, sites=sites)
+    return render_template('project_view.html', project_id=project_id, project=project, topic_trees=topic_trees, sites=sites, jobs=job_statuses)
 
 @content_gaps_bp.route('/projects/<project_id>/topic-trees/new', methods=['GET', 'POST'])
 def create_topic_tree(project_id):

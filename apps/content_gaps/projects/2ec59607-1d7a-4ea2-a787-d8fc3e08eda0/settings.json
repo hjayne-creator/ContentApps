@@ -3,13 +3,13 @@
   "project_name": "Rellify",
   "primary_url": "https://rellify.com/",
   "is_my_site": true,
-  "task_status": {
-    "status": "COMPLETED",
-    "error_message": null,
-    "compare_url": "/apps/content-gaps/projects/2ec59607-1d7a-4ea2-a787-d8fc3e08eda0/compare/ea3b3a65-cbb9-4bb1-9214-10d3f1c194ea",
-    "job_id": "00861d29-da9b-4c46-ae49-8f549c630c76"
-  },
   "jobs": [
-
+    {
+      "job_id": "8dca8668-da53-462e-8d50-6b30977e4bfe",
+      "status": "COMPLETED",
+      "error_message": null,
+      "compare_url": "/apps/content-gaps/projects/2ec59607-1d7a-4ea2-a787-d8fc3e08eda0/compare/ea3b3a65-cbb9-4bb1-9214-10d3f1c194ea",
+      "created_at": "2025-06-12 03:15:13.103768"
+    }
   ]
 }

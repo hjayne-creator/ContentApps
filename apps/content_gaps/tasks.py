@@ -6,6 +6,8 @@ import uuid
 from flask import url_for
 from flask import current_app
 import datetime
+from .models import ContentGapsJob
+from apps import db
 
 @shared_task(name='apps.content_gaps.tasks.run_topic_matching')
 def run_topic_matching_task(project_id, user_id, topic_tree_id):
@@ -38,52 +40,40 @@ def run_topic_matching_task(project_id, user_id, topic_tree_id):
         raise
 
 def update_task_status(project_id, status, error_message=None, compare_url=None, job_id=None):
-    """Update the task status in the project settings file"""
-    project_dir = os.path.join(os.path.dirname(__file__), 'projects', project_id)
-    settings_path = os.path.join(project_dir, 'settings.json')
-    
+    """Update the task status in the database"""
     try:
-        # Ensure project directory exists
-        os.makedirs(project_dir, exist_ok=True)
-        
-        # Load existing settings or create new
-        if os.path.exists(settings_path):
-            with open(settings_path, 'r') as f:
-                settings = json.load(f)
-        else:
-            settings = {}
-        
-        # Initialize jobs list if it doesn't exist
-        if 'jobs' not in settings:
-            settings['jobs'] = []
-            
         # Generate job_id if not provided
         if job_id is None:
             job_id = str(uuid.uuid4())
             
-        # Create new job entry
-        job = {
-            'job_id': job_id,
-            'status': status,
-            'error_message': error_message,
-            'compare_url': compare_url,
-            'created_at': str(datetime.datetime.utcnow())
-        }
+        # Try to find existing job
+        job = ContentGapsJob.query.filter_by(
+            project_id=project_id,
+            job_id=job_id
+        ).first()
         
-        # Remove ALL existing entries for this job_id regardless of status
-        settings['jobs'] = [j for j in settings['jobs'] if j['job_id'] != job_id]
-        
-        # Add the new job entry
-        settings['jobs'].append(job)
-        
-        # Keep only the last 10 jobs
-        settings['jobs'] = settings['jobs'][-10:]
-        
-        # Write settings file
-        with open(settings_path, 'w') as f:
-            json.dump(settings, f, indent=2)
+        if job:
+            # Update existing job
+            job.status = status
+            job.error_message = error_message
+            job.compare_url = compare_url
+            job.updated_at = datetime.datetime.utcnow()
+        else:
+            # Create new job
+            job = ContentGapsJob(
+                project_id=project_id,
+                job_id=job_id,
+                status=status,
+                error_message=error_message,
+                compare_url=compare_url
+            )
+            db.session.add(job)
+            
+        # Commit changes
+        db.session.commit()
             
         current_app.logger.info(f"Updated task status for job {job_id} to {status}")
     except Exception as e:
+        db.session.rollback()
         current_app.logger.error(f"Error updating task status: {e}")
         # Log the error but don't raise it to prevent task failure 
