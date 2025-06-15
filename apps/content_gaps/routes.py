@@ -299,18 +299,24 @@ def upload_site_content(project_id):
 @content_gaps_bp.route('/projects/<project_id>/run-matching', methods=['POST'])
 def run_topic_matching(project_id):
     topic_tree_id = request.form.get('topic_tree_id')
+    selected_site_ids = request.form.getlist('site_ids[]')
+    
     if not topic_tree_id:
         flash('Topic tree ID is required.', 'error')
+        return redirect(url_for('content_gaps.view_project', project_id=project_id))
+    
+    if not selected_site_ids:
+        flash('Please select at least one site to analyze.', 'error')
         return redirect(url_for('content_gaps.view_project', project_id=project_id))
         
     # Start the background task
     from .tasks import run_topic_matching_task
-    task = run_topic_matching_task.delay(project_id, request.user.id if hasattr(request, 'user') else None, topic_tree_id)
+    task = run_topic_matching_task.delay(project_id, request.user.id if hasattr(request, 'user') else None, topic_tree_id, selected_site_ids)
     
     flash('Topic matching has started in the background. This may take several minutes to complete.', 'info')
     return redirect(url_for('content_gaps.view_project', project_id=project_id))
 
-def _run_topic_matching_impl(project_id, user_id=None, topic_tree_id=None):
+def _run_topic_matching_impl(project_id, user_id=None, topic_tree_id=None, selected_site_ids=None):
     """Implementation of topic matching logic"""
     from flask import current_app
     
@@ -320,16 +326,25 @@ def _run_topic_matching_impl(project_id, user_id=None, topic_tree_id=None):
         if not topic_tree:
             raise ValueError(f"Topic tree {topic_tree_id} not found")
         
-        # Get sites from database
-        sites = Site.query.filter_by(project_id=project_id).all()
+        # Get selected sites from database
+        if selected_site_ids:
+            sites = Site.query.filter(Site.id.in_(selected_site_ids), Site.project_id == project_id).all()
+        else:
+            sites = Site.query.filter_by(project_id=project_id).all()
+            
         if not sites:
             raise ValueError("No sites found for this project")
         
+        current_app.logger.info(f"Starting topic matching for project {project_id}, tree {topic_tree_id}")
+        current_app.logger.info(f"Found {len(sites)} sites to process")
+        
         def flatten_tree(nodes, parent_path=None):
             """Flatten the topic tree into a list of paths"""
+            if parent_path is None:
+                parent_path = []
             paths = []
-            for node in nodes:
-                current_path = f"{parent_path}/{node['name']}" if parent_path else node['name']
+            for idx, node in enumerate(nodes):
+                current_path = parent_path + [str(idx)]
                 paths.append(current_path)
                 if 'children' in node:
                     paths.extend(flatten_tree(node['children'], current_path))
@@ -355,19 +370,47 @@ def _run_topic_matching_impl(project_id, user_id=None, topic_tree_id=None):
         
         # Get all topic paths
         topic_paths = flatten_tree(topic_tree.tree_data)
+        current_app.logger.info(f"Generated {len(topic_paths)} topic paths")
         
         # Get embeddings for all topics
         topic_embeddings = {}
         for path in topic_paths:
-            topic_embeddings[path] = get_embedding(path)
+            try:
+                # Validate path indices and build path string safely
+                current_node = topic_tree.tree_data
+                path_parts = []
+                for idx in path:
+                    idx_int = int(idx)
+                    if idx_int >= len(current_node):
+                        current_app.logger.warning(f"Invalid index {idx_int} in path {path}, skipping")
+                        break
+                    path_parts.append(current_node[idx_int]['name'])
+                    if 'children' in current_node[idx_int]:
+                        current_node = current_node[idx_int]['children']
+                    else:
+                        current_node = []
+                
+                if path_parts:  # Only process if we have valid path parts
+                    path_str = '/'.join(path_parts)
+                    topic_embeddings['-'.join(path)] = get_embedding(path_str)
+            except Exception as e:
+                current_app.logger.error(f"Error processing path {path}: {str(e)}")
+                continue
+        
+        if not topic_embeddings:
+            raise ValueError("No valid topic embeddings could be generated")
+        
+        current_app.logger.info(f"Generated embeddings for {len(topic_embeddings)} topics")
         
         # Process each site
+        total_matches = 0
         for site in sites:
+            current_app.logger.info(f"Processing site {site.id} with {len(site.pages)} pages")
             # Clear existing matches for this site and tree
             Match.query.filter_by(project_id=project_id, tree_id=topic_tree.id, site_id=site.id).delete()
             
             # Process each page in the site
-            for page in site.pages:
+            for page_idx, page in enumerate(site.pages):
                 # Get embedding for page content
                 page_embedding = get_embedding(page['description'])
                 
@@ -381,19 +424,22 @@ def _run_topic_matching_impl(project_id, user_id=None, topic_tree_id=None):
                         best_match = topic_path
                 
                 # Create match record if score is above threshold
-                if best_score > 0.7:  # Adjust threshold as needed
+                if best_score > 0.5:  # Lowered threshold to get more matches
+                    current_app.logger.info(f"Found match for page {page_idx} with score {best_score:.3f} to topic {best_match}")
                     match = Match(
                         project_id=project_id,
                         tree_id=topic_tree.id,
                         site_id=site.id,
-                        page_index=site.pages.index(page),
+                        page_index=page_idx,
                         matched_topics=[best_match],
                         similarity_scores=[best_score]
                     )
                     db.session.add(match)
+                    total_matches += 1
         
         # Commit all changes
         db.session.commit()
+        current_app.logger.info(f"Completed matching with {total_matches} total matches created")
         return True
 
 @content_gaps_bp.route('/projects/<project_id>/compare/<tree_id>')
@@ -403,6 +449,16 @@ def compare_view(project_id, tree_id):
     if not topic_tree:
         flash('Topic tree not found.')
         return redirect(url_for('content_gaps.view_project', project_id=project_id))
+
+    # Get the most recent job for this tree to get selected sites
+    job = ContentGapsJob.query.filter_by(
+        project_id=project_id,
+        tree_id=tree_id
+    ).order_by(ContentGapsJob.created_at.desc()).first()
+    
+    selected_site_ids = []
+    if job and job.selected_site_ids:
+        selected_site_ids = job.selected_site_ids
 
     # Flatten topic tree
     def flatten_tree(nodes, parent_path=None):
@@ -416,30 +472,75 @@ def compare_view(project_id, tree_id):
                 flat.extend(flatten_tree(node['children'], path))
         return flat
     flat_topics = flatten_tree(topic_tree.tree_data)
+    current_app.logger.info(f"Flattened tree into {len(flat_topics)} topics")
 
-    # Get all sites for this project
-    sites = Site.query.filter_by(project_id=project_id).all()
-    site_map = {site.id: site for site in sites}
+    # Get selected sites for this project
+    if selected_site_ids:
+        sites = Site.query.filter(Site.id.in_(selected_site_ids), Site.project_id == project_id).all()
+    else:
+        sites = Site.query.filter_by(project_id=project_id).all()
+    site_map = {str(site.id): site for site in sites}  # Convert UUID to string for keys
+    current_app.logger.info(f"Found {len(sites)} sites")
+    current_app.logger.info(f"Site IDs: {list(site_map.keys())}")
 
     # Get all matches for this tree
     matches = Match.query.filter_by(project_id=project_id, tree_id=tree_id).all()
+    current_app.logger.info(f"Found {len(matches)} matches")
 
     # Build topic->site->count mapping
     def path_key(path):
         return '-'.join(path)
-    topic_site_counts = {path_key(t['path']): {site.id: 0 for site in sites} for t in flat_topics}
-    # For drilldown: topic->site->list of (page_index, similarity)
-    topic_site_pages = {path_key(t['path']): {site.id: [] for site in sites} for t in flat_topics}
-
+    
+    # Initialize counts and pages for all topics and sites
+    topic_site_counts = {}
+    topic_site_pages = {}
+    
+    # First, create entries for all topics and sites
+    for topic in flat_topics:
+        topic_key = path_key(topic['path'])
+        topic_site_counts[topic_key] = {str(site.id): 0 for site in sites}  # Convert UUID to string
+        topic_site_pages[topic_key] = {str(site.id): [] for site in sites}  # Convert UUID to string
+    
+    # Process matches
     for m in matches:
-        site_id = m.site_id
+        site_id = str(m.site_id)  # Convert UUID to string
         page_index = m.page_index
+        
+        # Debug logging
+        current_app.logger.info(f"Processing match for site {site_id} (type: {type(site_id)})")
+        current_app.logger.info(f"Available site IDs: {list(topic_site_counts[list(topic_site_counts.keys())[0]].keys())}")
+        
+        if site_id not in site_map:
+            current_app.logger.warning(f"Site ID {site_id} not found in site_map")
+            continue
+            
         for i, topic_path in enumerate(m.matched_topics):
-            topic_key = path_key(topic_path)
-            if topic_key in topic_site_counts:
-                topic_site_counts[topic_key][site_id] += 1
-                sim = m.similarity_scores[i] if i < len(m.similarity_scores) else None
-                topic_site_pages[topic_key][site_id].append({'page_index': page_index, 'similarity': sim})
+            # Split the topic path into parts
+            path_parts = topic_path.split('-')
+            
+            # Add the match to each level of the path
+            current_path = []
+            for part in path_parts:
+                current_path.append(part)
+                topic_key = '-'.join(current_path)
+                
+                if topic_key in topic_site_counts:
+                    if site_id not in topic_site_counts[topic_key]:
+                        current_app.logger.warning(f"Site ID {site_id} not found in topic_site_counts for topic {topic_key}")
+                        continue
+                        
+                    topic_site_counts[topic_key][site_id] += 1
+                    sim = m.similarity_scores[i] if i < len(m.similarity_scores) else None
+                    topic_site_pages[topic_key][site_id].append({'page_index': page_index, 'similarity': sim})
+                    current_app.logger.info(f"Added match to topic {topic_key} for site {site_id}")
+                else:
+                    current_app.logger.warning(f"Topic key {topic_key} not found in topic_site_counts")
+
+    # Log final counts
+    for topic_key, site_counts in topic_site_counts.items():
+        for site_id, count in site_counts.items():
+            if count > 0:
+                current_app.logger.info(f"Topic {topic_key} has {count} matches for site {site_id}")
 
     return render_template(
         'compare.html',

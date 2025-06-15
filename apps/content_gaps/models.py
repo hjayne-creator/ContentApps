@@ -40,10 +40,12 @@ class ContentGapsJob(db.Model):
     
     id = Column(Integer, primary_key=True)
     project_id = Column(UUID(as_uuid=True), ForeignKey('content_gaps_projects.id', ondelete='CASCADE'), nullable=False)
+    tree_id = Column(UUID(as_uuid=True), ForeignKey('content_gaps_topic_trees.id', ondelete='CASCADE'), nullable=False)
     job_id = Column(UUID(as_uuid=True), nullable=False)
     status = Column(String(50), nullable=False)
     error_message = Column(Text)
     compare_url = Column(Text)
+    selected_site_ids = Column(JSON, nullable=True)  # Store selected site IDs as JSON array
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
     updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -55,10 +57,12 @@ class ContentGapsJob(db.Model):
         return {
             'id': self.id,
             'project_id': str(self.project_id),
+            'tree_id': str(self.tree_id),
             'job_id': str(self.job_id),
             'status': self.status,
             'error_message': self.error_message,
             'compare_url': self.compare_url,
+            'selected_site_ids': self.selected_site_ids,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }

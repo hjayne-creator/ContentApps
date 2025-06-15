@@ -31,10 +31,11 @@
                     </td>
                     {% for site in sites|sort(attribute='is_my_site', reverse=true) %}
                         {% set path_key = topic.path | join('-') %}
-                        {% set count = topic_site_counts[path_key][site.id] %}
+                        {% set site_id = site.id|string %}
+                        {% set count = topic_site_counts[path_key][site_id] %}
                         <td class="px-4 py-2">
                             {% if count > 0 %}
-                                <button type="button" class="text-green-700 underline hover:text-green-900 matched-pages-btn" data-topic="{{ topic.path|join('-') }}" data-site="{{ site.id }}">{{ count }}</button>
+                                <button type="button" class="text-green-700 underline hover:text-green-900 matched-pages-btn" data-topic="{{ topic.path|join('-') }}" data-site="{{ site_id }}">{{ count }}</button>
                             {% else %}
                                 <span class="text-gray-400">0</span>
                             {% endif %}
@@ -46,7 +47,8 @@
                         <div class="flex flex-wrap gap-8">
                         {% for site in sites|sort(attribute='is_my_site', reverse=true) %}
                             {% set path_key = topic.path | join('-') %}
-                            {% set matches = topic_site_pages[path_key][site.id] %}
+                            {% set site_id = site.id|string %}
+                            {% set matches = topic_site_pages[path_key][site_id] %}
                             {% if matches and matches|length > 0 %}
                                 <div>
                                     <div class="font-semibold mb-1">{{ site.label }}</div>
