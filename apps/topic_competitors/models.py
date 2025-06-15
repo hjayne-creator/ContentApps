@@ -1,5 +1,5 @@
 from datetime import datetime
-from apps import db
+from extensions import db
 from sqlalchemy.dialects.postgresql import JSON
 
 class TopicCompetitorsJob(db.Model):

@@ -1,6 +1,6 @@
 from datetime import datetime
 from sqlalchemy.dialects.postgresql import JSON
-from apps import db
+from extensions import db
 
 class Job(db.Model):
     __tablename__ = 'jobs'

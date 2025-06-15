@@ -11,7 +11,7 @@ import asyncio
 from typing import List, Dict
 import time
 from apps.topic_competitors.models import TopicCompetitorsJob
-from apps import db
+from extensions import db
 import datetime
 from celery.result import AsyncResult
 from .logic import generate_subtopics, generate_keywords, get_search_volume, get_serp_data, analyze_domains, generate_summary

@@ -1,12 +1,11 @@
 from flask import Flask, render_template, jsonify, request
-from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_cors import CORS
 import os
 from config import Config
 import logging
+from extensions import db
 
-db = SQLAlchemy()
 migrate = Migrate()
 
 # Configure logging
@@ -38,8 +37,7 @@ def register_blueprints(app):
     """Register blueprints with the Flask app"""
     # Use lazy loading to avoid circular imports
     with app.app_context():
-        from apps.content_plan.routes import create_blueprint
-        content_plan_bp = create_blueprint()
+        from apps.content_plan.routes import content_plan_bp
         app.register_blueprint(content_plan_bp)
 
 def register_error_handlers(app):

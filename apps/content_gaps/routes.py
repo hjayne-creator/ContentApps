@@ -8,7 +8,7 @@ from werkzeug.utils import secure_filename
 import numpy as np
 from dotenv import load_dotenv
 from .models import ContentGapsJob, TopicTree, Site, Match, db, Project
-from io import TextIOWrapper
+from io import TextIOWrapper, StringIO
 load_dotenv()
 
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
@@ -213,11 +213,11 @@ def edit_topic_tree_vertical(project_id, tree_id):
 @content_gaps_bp.route('/projects/<project_id>/sites/upload', methods=['GET', 'POST'])
 def upload_site_content(project_id):
     if request.method == 'POST':
-        if 'file' not in request.files:
+        if 'csv_file' not in request.files:
             flash('No file uploaded')
             return redirect(request.url)
         
-        file = request.files['file']
+        file = request.files['csv_file']
         if file.filename == '':
             flash('No file selected')
             return redirect(request.url)
@@ -227,27 +227,59 @@ def upload_site_content(project_id):
             return redirect(request.url)
         
         try:
-            csv_file = TextIOWrapper(file.stream, encoding='utf-8')
-            reader = csv.DictReader(csv_file)
+            # Read the file content and decode it
+            content = file.read().decode('utf-8-sig')  # utf-8-sig handles BOM
+            csv_file = StringIO(content)
+            
+            # Try to detect the delimiter
+            first_line = csv_file.readline().strip()
+            csv_file.seek(0)  # Reset file pointer
+            
+            # Check if the line contains tabs or commas
+            if '\t' in first_line:
+                delimiter = '\t'
+            else:
+                delimiter = ','
+            
+            reader = csv.DictReader(csv_file, delimiter=delimiter)
+            
+            # Get the fieldnames (column headers)
+            fieldnames = reader.fieldnames
+            
+            # Directly access the columns we know exist
+            url_col = 'Address'
+            title_col = 'Title 1'
+            desc_col = 'Meta Description 1'
+            
+            # Verify the columns exist
+            if not all(col in fieldnames for col in [url_col, title_col, desc_col]):
+                missing_cols = [col for col in [url_col, title_col, desc_col] if col not in fieldnames]
+                flash(f'Required columns not found: {", ".join(missing_cols)}. Found columns: {", ".join(fieldnames)}')
+                return redirect(request.url)
+            
+            # Reset file pointer to read data
+            csv_file.seek(0)
+            reader = csv.DictReader(csv_file, delimiter=delimiter)
+            
             pages = []
             for row in reader:
-                if 'url' in row and 'title' in row and 'description' in row:
+                if row[url_col] and row[title_col] and row[desc_col]:
                     pages.append({
-                        'url': row['url'],
-                        'title': row['title'],
-                        'description': row['description']
+                        'url': row[url_col].strip(),
+                        'title': row[title_col].strip(),
+                        'description': row[desc_col].strip()
                     })
             
             if not pages:
-                flash('No valid pages found in CSV')
+                flash('No valid pages found in CSV. Please ensure the CSV contains non-empty values for URL, title, and description.')
                 return redirect(request.url)
             
             # Create new site in database
             site = Site(
                 id=str(uuid.uuid4()),
                 project_id=project_id,
-                label=file.filename.replace('.csv', ''),
-                is_my_site=False,
+                label=request.form.get('site_label', file.filename.replace('.csv', '')),
+                is_my_site=bool(request.form.get('is_my_site')),
                 pages=pages
             )
             db.session.add(site)
@@ -258,6 +290,7 @@ def upload_site_content(project_id):
             
         except Exception as e:
             db.session.rollback()
+            current_app.logger.error(f"Error processing CSV: {str(e)}")
             flash(f'Error processing file: {e}')
             return redirect(request.url)
             
@@ -278,115 +311,90 @@ def run_topic_matching(project_id):
     return redirect(url_for('content_gaps.view_project', project_id=project_id))
 
 def _run_topic_matching_impl(project_id, user_id=None, topic_tree_id=None):
-    if not topic_tree_id:
-        raise ValueError("Topic tree ID is required")
+    """Implementation of topic matching logic"""
+    from flask import current_app
+    
+    with current_app.app_context():
+        # Get topic tree from database
+        topic_tree = TopicTree.query.filter_by(id=topic_tree_id, project_id=project_id).first()
+        if not topic_tree:
+            raise ValueError(f"Topic tree {topic_tree_id} not found")
         
-    # Get topic tree from database
-    topic_tree = TopicTree.query.filter_by(id=topic_tree_id, project_id=project_id).first()
-    if not topic_tree:
-        raise ValueError(f"Topic tree {topic_tree_id} not found")
-    
-    # Get all sites for this project
-    sites = Site.query.filter_by(project_id=project_id).all()
-    if not sites:
-        raise ValueError('No site data found for this project.')
-
-    # Flatten topic tree to (path, name) list
-    def flatten_tree(nodes, parent_path=None):
-        if parent_path is None:
-            parent_path = []
-        flat = []
-        for idx, node in enumerate(nodes):
-            path = parent_path + [str(idx)]
-            flat.append({'path': path, 'name': node['name']})
-            if 'children' in node and node['children']:
-                flat.extend(flatten_tree(node['children'], path))
-        return flat
-    flat_topics = flatten_tree(topic_tree.tree_data)
-
-    # Use OpenAI Embeddings if available
-    use_embeddings = bool(OPENAI_API_KEY)
-    embedding_cache = {}
-    def get_embedding(text):
-        if text in embedding_cache:
-            return embedding_cache[text]
-        try:
-            client = openai.OpenAI(api_key=OPENAI_API_KEY)
-            resp = client.embeddings.create(
-                model="text-embedding-3-large",
-                input=text
-            )
-            emb = np.array(resp.data[0].embedding)
-            embedding_cache[text] = emb
-            return emb
-        except Exception:
-            return None
-
-    def cosine_sim(a, b):
-        if a is None or b is None:
-            return 0.0
-        return float(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)))
-
-    # Delete existing matches for this tree
-    Match.query.filter_by(project_id=project_id, tree_id=topic_tree_id).delete()
-    db.session.commit()
-
-    # Matching
-    threshold = 0.5 if use_embeddings else 0.2  # Lower threshold for keyword matching
-    for site in sites:
-        for idx, page in enumerate(site.pages):
-            page_text = (page.get('title', '') + ' ' + page.get('description', '')).strip()
-            matched_topics = []
-            similarity_scores = []
-            if use_embeddings:
-                page_emb = get_embedding(page_text)
-                for topic in flat_topics:
-                    topic_emb = get_embedding(topic['name'])
-                    sim = cosine_sim(page_emb, topic_emb)
-                    if sim >= threshold:
-                        matched_topics.append(topic['path'])
-                        similarity_scores.append(float(sim))
-            else:
-                # Fallback: keyword overlap with more lenient matching
-                page_words = set(page_text.lower().split())
-                for topic in flat_topics:
-                    topic_words = set(topic['name'].lower().split())
-                    
-                    # Calculate word overlap
-                    common_words = page_words & topic_words
-                    
-                    # More lenient matching: if any significant words match
-                    if len(common_words) > 0:
-                        # Calculate similarity based on common words
-                        overlap = len(common_words) / max(len(page_words), len(topic_words))
-                        
-                        # Special case for multi-word topics
-                        if len(topic_words) > 1:
-                            # If all topic words are found in the page, boost the score
-                            if all(word in page_words for word in topic_words):
-                                overlap = max(overlap, 0.5)
-                        
-                        if overlap >= threshold:
-                            matched_topics.append(topic['path'])
-                            similarity_scores.append(overlap)
+        # Get sites from database
+        sites = Site.query.filter_by(project_id=project_id).all()
+        if not sites:
+            raise ValueError("No sites found for this project")
+        
+        def flatten_tree(nodes, parent_path=None):
+            """Flatten the topic tree into a list of paths"""
+            paths = []
+            for node in nodes:
+                current_path = f"{parent_path}/{node['name']}" if parent_path else node['name']
+                paths.append(current_path)
+                if 'children' in node:
+                    paths.extend(flatten_tree(node['children'], current_path))
+            return paths
+        
+        def get_embedding(text):
+            """Get embedding for text using OpenAI API"""
+            if not OPENAI_API_KEY:
+                raise ValueError("OpenAI API key not set")
+            try:
+                client = openai.OpenAI(api_key=OPENAI_API_KEY)
+                response = client.embeddings.create(
+                    model="text-embedding-ada-002",
+                    input=text
+                )
+                return response.data[0].embedding
+            except Exception as e:
+                raise ValueError(f"Error getting embedding: {e}")
+        
+        def cosine_sim(a, b):
+            """Calculate cosine similarity between two vectors"""
+            return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
+        
+        # Get all topic paths
+        topic_paths = flatten_tree(topic_tree.tree_data)
+        
+        # Get embeddings for all topics
+        topic_embeddings = {}
+        for path in topic_paths:
+            topic_embeddings[path] = get_embedding(path)
+        
+        # Process each site
+        for site in sites:
+            # Clear existing matches for this site and tree
+            Match.query.filter_by(project_id=project_id, tree_id=topic_tree.id, site_id=site.id).delete()
             
-            # Save match to database
-            match = Match(
-                project_id=project_id,
-                tree_id=topic_tree_id,
-                site_id=site.id,
-                page_index=idx,
-                matched_topics=matched_topics,
-                similarity_scores=similarity_scores
-            )
-            db.session.add(match)
-    
-    try:
+            # Process each page in the site
+            for page in site.pages:
+                # Get embedding for page content
+                page_embedding = get_embedding(page['description'])
+                
+                # Find best matching topic
+                best_match = None
+                best_score = -1
+                for topic_path, topic_embedding in topic_embeddings.items():
+                    score = cosine_sim(page_embedding, topic_embedding)
+                    if score > best_score:
+                        best_score = score
+                        best_match = topic_path
+                
+                # Create match record if score is above threshold
+                if best_score > 0.7:  # Adjust threshold as needed
+                    match = Match(
+                        project_id=project_id,
+                        tree_id=topic_tree.id,
+                        site_id=site.id,
+                        page_index=site.pages.index(page),
+                        matched_topics=[best_match],
+                        similarity_scores=[best_score]
+                    )
+                    db.session.add(match)
+        
+        # Commit all changes
         db.session.commit()
-        return {'status': 'success', 'tree_id': topic_tree_id}
-    except Exception as e:
-        db.session.rollback()
-        raise ValueError(f'Error saving matches: {e}')
+        return True
 
 @content_gaps_bp.route('/projects/<project_id>/compare/<tree_id>')
 def compare_view(project_id, tree_id):
@@ -447,27 +455,19 @@ def compare_view(project_id, tree_id):
 @content_gaps_bp.route('/projects/<project_id>/task-status')
 def task_status(project_id):
     """Get the current status of the topic matching task"""
-    project_dir = os.path.join(PROJECTS_DIR, project_id)
-    settings_path = os.path.join(project_dir, 'settings.json')
-    
-    if not os.path.exists(settings_path):
-        return {'status': 'NOT_FOUND', 'error_message': 'Project not found'}, 404
-        
     try:
-        with open(settings_path) as f:
-            settings = json.load(f)
-            
-        jobs = settings.get('jobs', [])
+        # Get the most recent job for this project
+        job = ContentGapsJob.query.filter_by(project_id=project_id).order_by(ContentGapsJob.created_at.desc()).first()
         
-        # Get the most recent job for current status
-        current_job = jobs[-1] if jobs else None
+        if not job:
+            return {'status': 'NOT_FOUND', 'error_message': 'No jobs found for this project'}, 404
         
         return {
-            'status': current_job['status'] if current_job else 'UNKNOWN',
-            'error_message': current_job.get('error_message') if current_job else None,
-            'compare_url': current_job.get('compare_url') if current_job else None,
-            'job_id': current_job['job_id'] if current_job else None,
-            'jobs': jobs
+            'status': job.status,
+            'error_message': job.error_message,
+            'compare_url': job.compare_url,
+            'job_id': str(job.job_id),
+            'jobs': [job.to_dict() for job in ContentGapsJob.query.filter_by(project_id=project_id).order_by(ContentGapsJob.created_at.desc()).all()]
         }
     except Exception as e:
         current_app.logger.error(f"Error getting task status: {e}")
@@ -475,18 +475,25 @@ def task_status(project_id):
 
 @content_gaps_bp.route('/projects/<project_id>/delete-site', methods=['POST'])
 def delete_site(project_id):
-    site_id = request.form.get('site_id')
-    if not site_id:
-        flash('No site specified')
-        return redirect(url_for('content_gaps.view_project', project_id=project_id))
-    
     try:
-        site = Site.query.filter_by(id=site_id, project_id=project_id).first_or_404()
+        data = request.get_json()
+        if not data:
+            return jsonify({'status': 'error', 'error': 'Invalid request data'}), 400
+            
+        site_id = data.get('site_id')
+        if not site_id:
+            return jsonify({'status': 'error', 'error': 'No site specified'}), 400
+        
+        # Find the site and verify it belongs to the project
+        site = Site.query.filter_by(id=site_id, project_id=project_id).first()
+        if not site:
+            return jsonify({'status': 'error', 'error': 'Site not found'}), 404
+            
+        # Delete the site - this will cascade delete related matches due to the foreign key constraint
         db.session.delete(site)
         db.session.commit()
-        flash('Site deleted successfully')
+        return jsonify({'status': 'success'})
     except Exception as e:
         db.session.rollback()
-        flash(f'Error deleting site: {e}')
-    
-    return redirect(url_for('content_gaps.view_project', project_id=project_id))
+        current_app.logger.error(f"Error deleting site: {str(e)}")
+        return jsonify({'status': 'error', 'error': 'Failed to delete site'}), 500

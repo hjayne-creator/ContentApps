@@ -1,7 +1,7 @@
 import json
 import logging
 from flask import current_app
-from apps import db
+from extensions import db
 from apps.content_plan.models import Job, Theme
 from apps.content_plan.utils.scraper import scrape_website
 from apps.content_plan.utils.search import search_serpapi, deduplicate_results

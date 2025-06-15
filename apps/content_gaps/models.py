@@ -1,11 +1,14 @@
-from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import uuid
 from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, UniqueConstraint, JSON, Float, Boolean
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
+from extensions import db
 
-db = SQLAlchemy()
+def init_db(app):
+    """Create database tables if they don't exist"""
+    with app.app_context():
+        db.create_all()
 
 class Project(db.Model):
     __tablename__ = 'content_gaps_projects'

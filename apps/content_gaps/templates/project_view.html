@@ -112,11 +112,6 @@
                         <a href="{{ url_for('content_gaps.edit_topic_tree', project_id=project_id, tree_id=tree.tree_id) }}" class="text-green-600 hover:text-green-700">Edit</a>
                         {% if tree.has_report %}
                             <a href="{{ url_for('content_gaps.compare_view', project_id=project_id, tree_id=tree.tree_id) }}" class="text-green-600 hover:text-green-700">View Report</a>
-                        {% else %}
-                            <form action="{{ url_for('content_gaps.run_topic_matching', project_id=project_id) }}" method="post" class="inline">
-                                <input type="hidden" name="topic_tree_id" value="{{ tree.tree_id }}">
-                                <button type="submit" class="text-green-600 hover:text-green-700">Run Analysis</button>
-                            </form>
                         {% endif %}
                     </div>
                 </div>
@@ -308,6 +303,7 @@ function deleteSite(siteId) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
             },
             body: JSON.stringify({ site_id: siteId })
         })
