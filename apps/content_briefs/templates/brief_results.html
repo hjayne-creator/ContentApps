@@ -1,95 +1,168 @@
 {% extends 'base.html' %}
 {% block content %}
-  <div class="card mt-4">
-    <div class="card-body">
-      <h2>{% if keywords and keywords[0] %}{{ keywords[0] }}{% else %}{{ kw }}{% endif %}</h2>
-      {% if keyword_info %}
-        <div class="alert alert-info" style="margin-bottom: 1em;">
-          <strong>Keyword Summary:</strong> {{ keyword_info }}
+<div class="container py-4">
+  <div class="row">
+    <div class="col-lg-8 mx-auto">
+      <!-- Header -->
+      <div class="mb-4">
+        <h1 class="h2 mb-3">{% if keywords and keywords[0] %}{{ keywords[0] }}{% else %}{{ kw }}{% endif %}</h1>
+        <div class="d-flex gap-2">
+          <a href="{{ url_for('content_briefs_bp.download_docx', task_id=task_id) }}" class="btn btn-primary" download>
+            <i class="fas fa-file-word me-2"></i>Download as .docx
+          </a>
+          <a href="{{ url_for('content_briefs_bp.index') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-search me-2"></i>New Search
+          </a>
+          <a href="{{ url_for('content_briefs_bp.admin_page') }}" class="btn btn-outline-success">
+            <i class="fas fa-list me-2"></i>Jobs
+          </a>
         </div>
-      {% endif %}
-      {% if brand_brief %}
-        <div class="alert alert-warning" style="margin-bottom: 1em;">
-          <strong>Brand Brief:</strong> {{ brand_brief }}
-        </div>
-      {% endif %}
-      {% if full_brief %}
-        <div class="alert alert-primary" style="margin-bottom: 1em;">
-          <strong>Brief Outline:</strong>
-          <pre style="white-space: pre-wrap; margin-bottom: 0; background: none; border: none;">{{ full_brief }}</pre>
-        </div>
-      {% endif %}
-      {% if brief.word_count %}
-        <p><strong>Suggested Word Count:</strong> {{ brief.word_count }}</p>
-      {% endif %}
-      {% if keywords or related_keywords %}
-        <hr>
-        <h4>SEO Keywords</h4>
-        <ul>
-          {% if keywords and keywords[0] %}
-            <li>{{ keywords[0] }}</li>
-          {% endif %}
-          {% for kw in related_keywords %}
-            <li>{{ kw }}</li>
-          {% endfor %}
-        </ul>
-      {% endif %}
-      {% if reddit_summaries or brief.reddit_summaries %}
-        <hr>
-        <h4>Reddit Insights</h4>
-        <ul>
-          {% for topic, summary in reddit_summaries.items() %}
-            <li><strong>{{ topic }}:</strong> {{ summary|format_reddit_summary|safe }}</li>
-          {% endfor %}
-          {% if not reddit_summaries %}
-            {% for topic, summary in brief.reddit_summaries.items() %}
-              <li><strong>{{ topic }}:</strong> {{ summary|format_reddit_summary|safe }}</li>
-            {% endfor %}
-          {% endif %}
-        </ul>
-      {% endif %}
-      {% if serp_data %}
-        <hr>
-        <h4>Google Results</h4>
-        {% for kw, data in serp_data.items() %}
-          <div class="mb-3">
-            <h5>{{ kw }}</h5>
-            <ul>
-              {% for result in data.serp_results %}
-                <li class="mb-2">
-                  <a href="{{ result.url }}" target="_blank"><strong>{{ result.title }}</strong></a><br>
-                  <span>{{ result.description }}</span><br>
-                  <small class="text-muted">{{ result.url }}</small>
-                </li>
-              {% endfor %}
-            </ul>
-            {% if data.related_searches %}
-              <div class="mt-2">
-                <strong>Related Searches:</strong>
-                <ul>
-                  {% for search in data.related_searches %}
-                    <li>{{ search.query }}</li>
-                  {% endfor %}
-                </ul>
+      </div>
+
+      <!-- Main Content -->
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <!-- Brand Brief -->
+          {% if brand_brief %}
+          <div class="mb-4">
+            <h3 class="h5 mb-3 text-primary">Brand Profile</h3>
+            <div class="card bg-light">
+              <div class="card-body">
+                {{ brand_brief|safe }}
               </div>
+            </div>
+          </div>
+          {% endif %}
+
+          <!-- Keyword Summary -->
+          {% if keyword_info %}
+          <div class="mb-4">
+            <h3 class="h5 mb-3 text-primary">Keyword Summary</h3>
+            <p class="mb-0">{{ keyword_info }}</p>
+          </div>
+          {% endif %}
+
+          <!-- Brief Outline -->
+          {% if brief %}
+          <div class="mb-4">
+            <h3 class="h5 mb-3 text-primary">Content Brief</h3>
+            {% if brief.title %}
+            <h4 class="h6 mb-2">{{ brief.title }}</h4>
             {% endif %}
-            {% if data.related_questions %}
-              <div class="mt-2">
-                <strong>Related Questions:</strong>
-                <ul>
-                  {% for question in data.related_questions %}
-                    <li>{{ question.question }}</li>
-                  {% endfor %}
-                </ul>
-              </div>
+            {% if brief.introduction %}
+            <p class="mb-3"><strong>Introduction:</strong> {{ brief.introduction }}</p>
+            {% endif %}
+            {% if brief.audience %}
+            <p class="mb-3"><strong>Target Audience:</strong> {{ brief.audience }}</p>
+            {% endif %}
+            {% if brief.search_intent %}
+            <p class="mb-3"><strong>Search Intent:</strong> {{ brief.search_intent }}</p>
+            {% endif %}
+            {% if brief.talking_points %}
+            <div class="mb-3">
+              <strong>Main Talking Points:</strong>
+              <ul class="list-unstyled ms-3">
+                {% for point in brief.talking_points %}
+                <li class="mb-2">• {{ point }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+            {% endif %}
+            {% if brief.word_count %}
+            <p class="mb-0"><strong>Suggested Word Count:</strong> {{ brief.word_count }}</p>
             {% endif %}
           </div>
-        {% endfor %}
-      {% endif %}
-      <a href="{{ url_for('content_briefs_bp.download_docx', task_id=task_id) }}" class="btn btn-primary mt-3" download>Download as .docx</a>
-      <a href="{{ url_for('content_briefs_bp.index') }}" class="btn btn-secondary mt-3">New Search</a>
-      <a href="{{ url_for('content_briefs_bp.admin_page') }}" class="btn btn-success mt-3">Jobs</a>
+          {% endif %}
 
+          <!-- SEO Keywords -->
+          {% if keywords or related_keywords %}
+          <div class="mb-4">
+            <h3 class="h5 mb-3 text-primary">SEO Keywords</h3>
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+              {% if keywords and keywords[0] %}
+              <span class="badge bg-primary">{{ keywords[0] }}</span>
+              {% endif %}
+              {% for kw in related_keywords %}
+              <span class="badge bg-secondary">{{ kw }}</span>{% if not loop.last %},{% endif %}
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+
+          <!-- Reddit Insights -->
+          {% if reddit_summaries or brief.reddit_summaries %}
+          <div class="mb-4">
+            <h3 class="h5 mb-3 text-primary">Reddit Insights</h3>
+            <div class="list-group">
+              {% for topic, summary in reddit_summaries.items() %}
+              <div class="list-group-item">
+                <h6 class="mb-2">{{ topic }}</h6>
+                <p class="mb-0">{{ summary|format_reddit_summary|safe }}</p>
+              </div>
+              {% endfor %}
+              {% if not reddit_summaries %}
+                {% for topic, summary in brief.reddit_summaries.items() %}
+                <div class="list-group-item">
+                  <h6 class="mb-2">{{ topic }}</h6>
+                  <p class="mb-0">{{ summary|format_reddit_summary|safe }}</p>
+                </div>
+                {% endfor %}
+              {% endif %}
+            </div>
+          </div>
+          {% endif %}
+
+          <!-- Google Results -->
+          {% if serp_data %}
+          <div class="mb-4">
+            <h3 class="h5 mb-3 text-primary">Google Results</h3>
+            {% for kw, data in serp_data.items() %}
+            <div class="card mb-3">
+              <div class="card-header">
+                <h4 class="h6 mb-0">{{ kw }}</h4>
+              </div>
+              <div class="card-body">
+                <div class="list-group mb-3">
+                  {% for result in data.serp_results %}
+                  <div class="list-group-item">
+                    <a href="{{ result.url }}" target="_blank" class="text-decoration-none">
+                      <h5 class="h6 mb-1">{{ result.title }}</h5>
+                    </a>
+                    <p class="mb-1 small">{{ result.description }}</p>
+                    <small class="text-muted">{{ result.url }}</small>
+                  </div>
+                  {% endfor %}
+                </div>
+
+                {% if data.related_searches %}
+                <div class="mb-3">
+                  <h5 class="h6 mb-2">Related Searches</h5>
+                  <div class="d-flex flex-wrap gap-2">
+                    {% for search in data.related_searches %}
+                    <span class="badge bg-light text-dark">{{ search.query }}</span>
+                    {% endfor %}
+                  </div>
+                </div>
+                {% endif %}
+
+                {% if data.related_questions %}
+                <div>
+                  <h5 class="h6 mb-2">Related Questions</h5>
+                  <ul class="list-unstyled">
+                    {% for question in data.related_questions %}
+                    <li class="mb-2">• {{ question.question }}</li>
+                    {% endfor %}
+                  </ul>
+                </div>
+                {% endif %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+      </div>
     </div>
   </div>
+</div>
 {% endblock %} 
