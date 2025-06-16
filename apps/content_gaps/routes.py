@@ -357,7 +357,7 @@ def _run_topic_matching_impl(project_id, user_id=None, topic_tree_id=None, selec
             try:
                 client = openai.OpenAI(api_key=OPENAI_API_KEY)
                 response = client.embeddings.create(
-                    model="text-embedding-ada-002",
+                    model="text-embedding-3-small",
                     input=text
                 )
                 return response.data[0].embedding
@@ -576,25 +576,40 @@ def task_status(project_id):
 
 @content_gaps_bp.route('/projects/<project_id>/delete-site', methods=['POST'])
 def delete_site(project_id):
+    data = request.get_json()
+    site_id = data.get('site_id')
+    
+    if not site_id:
+        return jsonify({'status': 'error', 'error': 'Site ID is required'}), 400
+    
+    site = Site.query.filter_by(id=site_id, project_id=project_id).first()
+    if not site:
+        return jsonify({'status': 'error', 'error': 'Site not found'}), 404
+    
     try:
-        data = request.get_json()
-        if not data:
-            return jsonify({'status': 'error', 'error': 'Invalid request data'}), 400
-            
-        site_id = data.get('site_id')
-        if not site_id:
-            return jsonify({'status': 'error', 'error': 'No site specified'}), 400
-        
-        # Find the site and verify it belongs to the project
-        site = Site.query.filter_by(id=site_id, project_id=project_id).first()
-        if not site:
-            return jsonify({'status': 'error', 'error': 'Site not found'}), 404
-            
-        # Delete the site - this will cascade delete related matches due to the foreign key constraint
         db.session.delete(site)
         db.session.commit()
         return jsonify({'status': 'success'})
     except Exception as e:
         db.session.rollback()
-        current_app.logger.error(f"Error deleting site: {str(e)}")
-        return jsonify({'status': 'error', 'error': 'Failed to delete site'}), 500
+        return jsonify({'status': 'error', 'error': str(e)}), 500
+
+@content_gaps_bp.route('/projects/<project_id>/delete-topic-tree', methods=['POST'])
+def delete_topic_tree(project_id):
+    data = request.get_json()
+    tree_id = data.get('tree_id')
+    
+    if not tree_id:
+        return jsonify({'status': 'error', 'error': 'Tree ID is required'}), 400
+    
+    tree = TopicTree.query.filter_by(id=tree_id, project_id=project_id).first()
+    if not tree:
+        return jsonify({'status': 'error', 'error': 'Topic tree not found'}), 404
+    
+    try:
+        db.session.delete(tree)
+        db.session.commit()
+        return jsonify({'status': 'success'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'status': 'error', 'error': str(e)}), 500
