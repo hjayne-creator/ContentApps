@@ -58,21 +58,26 @@ def generate_brief_task(self, keyword, website):
     brief_builder = BriefBuilder()
     brief = brief_builder.build_brief(all_keywords, serp_data, website_summary, serp_headings, reddit_summaries, keyword_info=keyword_info)
 
-    # Save brief as JSON
-    result_data = {
-        'keywords': all_keywords,
-        'keyword': all_keywords[0],
-        'keyword_info': keyword_info,
-        'related_keywords': all_keywords[1:],
-        'serp_data': serp_data,
-        'website_summary': website_summary,
-        'serp_headings': serp_headings,
-        'reddit_summaries': reddit_summaries,
-        'brief': brief
-    }
+    # Save both research data and final brief
     task_id = self.request.id
+    
+    # Save research data
+    result_data = {
+        "all_keywords": all_keywords,
+        "serp_data": serp_data,
+        "serp_headings": serp_headings,
+        "reddit_summaries": reddit_summaries,
+        "website_summary": website_summary,
+        "keyword_info": keyword_info,
+        "website_url": website
+    }
+    research_path = os.path.join(BRIEFS_DIR, f'research_{task_id}.json')
+    with open(research_path, 'w') as f:
+        json.dump(result_data, f, indent=2)
+    
+    # Save final brief
     brief_path = os.path.join(BRIEFS_DIR, f'brief_{task_id}.json')
     with open(brief_path, 'w') as f:
-        json.dump(result_data, f, indent=2)
+        json.dump(brief, f, indent=2)
 
-    return {'result': f'Brief generated! <a href="/download/{task_id}" target="_blank">Download JSON</a>'} 
+    return {'result': f'Brief generated!', 'brief_path': brief_path, 'research_path': research_path} 

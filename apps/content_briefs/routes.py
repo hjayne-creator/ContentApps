@@ -79,20 +79,28 @@ def download_docx(task_id):
 
 @content_briefs_bp.route('/results/<task_id>')
 def results_page(task_id):
-    path = os.path.join(BRIEFS_DIR, f'brief_{task_id}.json')
     try:
-        with open(path, 'r') as f:
-            data = json.load(f)
-        brief = data.get('brief', {})
-        full_brief = brief.get('full_brief', 'No brief found.')
-        keyword = data.get('keyword', '')
-        keyword_info = data.get('keyword_info', '')
-        keywords = [keyword] if keyword else []
-        reddit_summaries = data.get('reddit_summaries', {})
-        serp_data = data.get('serp_data', {})
-        related_keywords = data.get('related_keywords', [])
-        brand_brief = data.get('website_summary', '')
-        return render_template('brief_results.html', full_brief=full_brief, brief=brief, task_id=task_id, keywords=keywords, reddit_summaries=reddit_summaries, serp_data=serp_data, keyword_info=keyword_info, related_keywords=related_keywords, brand_brief=brand_brief)
+        # Load the brief data
+        brief_path = os.path.join(BRIEFS_DIR, f'brief_{task_id}.json')
+        research_path = os.path.join(BRIEFS_DIR, f'research_{task_id}.json')
+        
+        content_brief = {}
+        research_data = {}
+        
+        # Load brief data
+        if os.path.exists(brief_path):
+            with open(brief_path, 'r') as f:
+                content_brief = json.load(f)
+        
+        # Load research data
+        if os.path.exists(research_path):
+            with open(research_path, 'r') as f:
+                research_data = json.load(f)
+        
+        return render_template('brief_results.html',
+                             content_brief=content_brief,
+                             research_data=research_data,
+                             task_id=task_id)
     except Exception as e:
         return f"Error loading brief: {e}", 404
 
@@ -101,20 +109,54 @@ def admin_page():
     briefs = []
     try:
         for fname in os.listdir(BRIEFS_DIR):
-            if fname.endswith('.json'):
+            if fname.startswith('brief_') and fname.endswith('.json'):
                 task_id = fname.replace('brief_', '').replace('.json', '')
-                path = os.path.join(BRIEFS_DIR, fname)
-                with open(path, 'r') as f:
-                    data = json.load(f)
-                keywords = data.get('keywords', [])
-                topic = keywords[0] if keywords else 'Untitled'
+                brief_path = os.path.join(BRIEFS_DIR, fname)
+                research_path = os.path.join(BRIEFS_DIR, f'research_{task_id}.json')
+                
+                # Load brief data
+                content_brief = {}
+                research_data = {}
+                
+                if os.path.exists(brief_path):
+                    with open(brief_path, 'r') as f:
+                        content_brief = json.load(f)
+                
+                if os.path.exists(research_path):
+                    with open(research_path, 'r') as f:
+                        research_data = json.load(f)
+                
+                # Get topic from brief title or research keywords
+                topic = 'Untitled'
+                if content_brief.get('title', {}).get('main_title'):
+                    topic = content_brief['title']['main_title']
+                elif research_data.get('all_keywords'):
+                    topic = research_data['all_keywords'][0] if research_data['all_keywords'] else 'Untitled'
+                
+                # Get website from research data
+                website = research_data.get('website_url', 'N/A')
+                if website and len(website) > 50:
+                    website = website[:50] + '...'
+                
+                # Get creation time
+                creation_time = os.path.getctime(brief_path)
+                from datetime import datetime
+                created_at = datetime.fromtimestamp(creation_time).strftime('%Y-%m-%d %H:%M')
+                
                 briefs.append({
                     'task_id': task_id,
                     'topic': topic,
+                    'website': website,
+                    'created_at': created_at,
                     'json_link': f'/content-briefs/download/{task_id}',
                     'docx_link': f'/content-briefs/download_docx/{task_id}',
-                    'results_link': f'/content-briefs/results/{task_id}'
+                    'results_link': f'/content-briefs/results/{task_id}',
+                    'has_research': os.path.exists(research_path)
                 })
+        
+        # Sort by creation time (newest first)
+        briefs.sort(key=lambda x: x['created_at'], reverse=True)
+        
     except Exception as e:
         return f"Error loading briefs: {e}", 500
     return render_template('briefs_admin.html', briefs=briefs)

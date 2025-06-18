@@ -1,167 +1,338 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="container py-4">
-  <div class="row">
-    <div class="col-lg-8 mx-auto">
-      <!-- Header -->
-      <div class="mb-4">
-        <h1 class="h2 mb-3">{% if keywords and keywords[0] %}{{ keywords[0] }}{% else %}{{ kw }}{% endif %}</h1>
-        <div class="d-flex gap-2">
-          <a href="{{ url_for('content_briefs_bp.download_docx', task_id=task_id) }}" class="btn btn-primary" download>
-            <i class="fas fa-file-word me-2"></i>Download as .docx
-          </a>
-          <a href="{{ url_for('content_briefs_bp.index') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-search me-2"></i>New Search
-          </a>
-          <a href="{{ url_for('content_briefs_bp.admin_page') }}" class="btn btn-outline-success">
-            <i class="fas fa-list me-2"></i>Jobs
-          </a>
-        </div>
+<div class="container mx-auto px-4 py-8">
+  <div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="mb-6">
+      <h1 class="text-3xl font-bold mb-4">
+        {% if content_brief and content_brief.title %}
+          {{ content_brief.title.main_title }}
+        {% else %}
+          {{ research_data.keywords[0] if research_data.keywords else 'Untitled' }}
+        {% endif %}
+      </h1>
+      <div class="flex gap-3">
+        <a href="{{ url_for('content_briefs_bp.download_docx', task_id=task_id) }}" class="btn-primary" download>
+          <i class="fas fa-file-word mr-2"></i>Download as .docx
+        </a>
+        <a href="{{ url_for('content_briefs_bp.index') }}" class="btn-secondary">
+          <i class="fas fa-search mr-2"></i>New Search
+        </a>
+        <a href="{{ url_for('content_briefs_bp.admin_page') }}" class="btn-secondary">
+          <i class="fas fa-list mr-2"></i>Jobs
+        </a>
       </div>
+    </div>
 
-      <!-- Main Content -->
-      <div class="card shadow-sm mb-4">
-        <div class="card-body">
-          <!-- Brand Brief -->
-          {% if brand_brief %}
-          <div class="mb-4">
-            <h3 class="h5 mb-3 text-primary">Brand Profile</h3>
-            <div class="card bg-light">
-              <div class="card-body">
-                {{ brand_brief|safe }}
+    <!-- Main Content -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+      <!-- Content Brief -->
+      {% if content_brief %}
+        <!-- Title Section -->
+        {% if content_brief.title %}
+        <div class="mb-8">
+          <h3 class="text-2xl font-semibold mb-4 text-primary-600 border-b pb-2">Title Information</h3>
+          <div class="bg-gray-50 rounded-lg p-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <h4 class="font-semibold text-gray-700 mb-2">Main Title</h4>
+                <p class="text-lg">{{ content_brief.title.main_title }}</p>
+              </div>
+              <div>
+                <h4 class="font-semibold text-gray-700 mb-2">Meta Title</h4>
+                <p class="text-sm text-gray-600">{{ content_brief.title.meta_title }}</p>
+              </div>
+              <div>
+                <h4 class="font-semibold text-gray-700 mb-2">Meta Description</h4>
+                <p class="text-sm text-gray-600">{{ content_brief.title.meta_description }}</p>
               </div>
             </div>
           </div>
-          {% endif %}
+        </div>
+        {% endif %}
 
-          <!-- Keyword Summary -->
-          {% if keyword_info %}
-          <div class="mb-4">
-            <h3 class="h5 mb-3 text-primary">Keyword Summary</h3>
-            <p class="mb-0">{{ keyword_info }}</p>
-          </div>
-          {% endif %}
-
-          <!-- Brief Outline -->
-          {% if brief %}
-          <div class="mb-4">
-            <h3 class="h5 mb-3 text-primary">Content Brief</h3>
-            {% if brief.title %}
-            <h4 class="h6 mb-2">{{ brief.title }}</h4>
-            {% endif %}
-            {% if brief.introduction %}
-            <p class="mb-3"><strong>Introduction:</strong> {{ brief.introduction }}</p>
-            {% endif %}
-            {% if brief.audience %}
-            <p class="mb-3"><strong>Target Audience:</strong> {{ brief.audience }}</p>
-            {% endif %}
-            {% if brief.search_intent %}
-            <p class="mb-3"><strong>Search Intent:</strong> {{ brief.search_intent }}</p>
-            {% endif %}
-            {% if brief.talking_points %}
-            <div class="mb-3">
-              <strong>Main Talking Points:</strong>
-              <ul class="list-unstyled ms-3">
-                {% for point in brief.talking_points %}
-                <li class="mb-2">• {{ point }}</li>
+        <!-- Audience Section -->
+        {% if content_brief.audience %}
+        <div class="mb-8">
+          <h3 class="text-2xl font-semibold mb-4 text-primary-600 border-b pb-2">Target Audience</h3>
+          <div class="bg-gray-50 rounded-lg p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h4 class="font-semibold text-gray-700 mb-2">Primary Audience</h4>
+                <p class="text-gray-800">{{ content_brief.audience.primary_audience }}</p>
+              </div>
+              <div>
+                <h4 class="font-semibold text-gray-700 mb-2">Secondary Audience</h4>
+                <p class="text-gray-800">{{ content_brief.audience.secondary_audience }}</p>
+              </div>
+            </div>
+            
+            {% if content_brief.audience.pain_points %}
+            <div class="mt-6">
+              <h4 class="font-semibold text-gray-700 mb-3">Pain Points</h4>
+              <ul class="list-disc ml-6 space-y-1">
+                {% for point in content_brief.audience.pain_points %}
+                <li class="text-gray-800">{{ point }}</li>
                 {% endfor %}
               </ul>
             </div>
             {% endif %}
-            {% if brief.word_count %}
-            <p class="mb-0"><strong>Suggested Word Count:</strong> {{ brief.word_count }}</p>
+            
+            {% if content_brief.audience.goals %}
+            <div class="mt-6">
+              <h4 class="font-semibold text-gray-700 mb-3">Goals</h4>
+              <ul class="list-disc ml-6 space-y-1">
+                {% for goal in content_brief.audience.goals %}
+                <li class="text-gray-800">{{ goal }}</li>
+                {% endfor %}
+              </ul>
+            </div>
             {% endif %}
           </div>
-          {% endif %}
+        </div>
+        {% endif %}
 
-          <!-- SEO Keywords -->
-          {% if keywords or related_keywords %}
-          <div class="mb-4">
-            <h3 class="h5 mb-3 text-primary">SEO Keywords</h3>
-            <div class="d-flex flex-wrap gap-2 align-items-center">
-              {% if keywords and keywords[0] %}
-              <span class="badge bg-primary">{{ keywords[0] }}</span>
-              {% endif %}
-              {% for kw in related_keywords %}
-              <span class="badge bg-secondary">{{ kw }}</span>{% if not loop.last %},{% endif %}
-              {% endfor %}
+        <!-- Content Structure -->
+        {% if content_brief.content_structure %}
+        <div class="mb-8">
+          <h3 class="text-2xl font-semibold mb-4 text-primary-600 border-b pb-2">Content Structure</h3>
+          <div class="bg-gray-50 rounded-lg p-6">
+            <!-- Introduction -->
+            <div class="mb-6">
+              <h4 class="font-semibold text-gray-700 mb-2">Introduction</h4>
+              <p class="text-gray-800">{{ content_brief.content_structure.introduction }}</p>
             </div>
-          </div>
-          {% endif %}
-
-          <!-- Reddit Insights -->
-          {% if reddit_summaries or brief.reddit_summaries %}
-          <div class="mb-4">
-            <h3 class="h5 mb-3 text-primary">Reddit Insights</h3>
-            <div class="list-group">
-              {% for topic, summary in reddit_summaries.items() %}
-              <div class="list-group-item">
-                <h6 class="mb-2">{{ topic }}</h6>
-                <p class="mb-0">{{ summary|format_reddit_summary|safe }}</p>
-              </div>
-              {% endfor %}
-              {% if not reddit_summaries %}
-                {% for topic, summary in brief.reddit_summaries.items() %}
-                <div class="list-group-item">
-                  <h6 class="mb-2">{{ topic }}</h6>
-                  <p class="mb-0">{{ summary|format_reddit_summary|safe }}</p>
+            
+            <!-- Main Sections -->
+            {% if content_brief.content_structure.main_sections %}
+            <div class="mb-6">
+              <h4 class="font-semibold text-gray-700 mb-4">Main Sections</h4>
+              <div class="space-y-6">
+                {% for section in content_brief.content_structure.main_sections %}
+                <div class="bg-white rounded-lg p-4 border">
+                  <h5 class="text-lg font-medium mb-3 text-primary-600">{{ section.heading }}</h5>
+                  
+                  {% if section.key_points %}
+                  <div class="mb-4">
+                    <h6 class="font-semibold text-gray-700 mb-2">Key Points</h6>
+                    <ul class="list-disc ml-6 space-y-1">
+                      {% for point in section.key_points %}
+                      <li class="text-gray-800">{{ point }}</li>
+                      {% endfor %}
+                    </ul>
+                  </div>
+                  {% endif %}
+                  
+                  {% if section.subsections %}
+                  <div>
+                    <h6 class="font-semibold text-gray-700 mb-2">Subsections</h6>
+                    <div class="space-y-3">
+                      {% for subsection in section.subsections %}
+                      <div class="bg-gray-100 rounded p-3">
+                        <h7 class="font-medium text-gray-700">{{ subsection.heading }}</h7>
+                        <p class="text-gray-800 mt-1">{{ subsection.content }}</p>
+                      </div>
+                      {% endfor %}
+                    </div>
+                  </div>
+                  {% endif %}
                 </div>
                 {% endfor %}
-              {% endif %}
+              </div>
+            </div>
+            {% endif %}
+
+            <!-- Conclusion -->
+            <div>
+              <h4 class="font-semibold text-gray-700 mb-2">Conclusion</h4>
+              <p class="text-gray-800">{{ content_brief.content_structure.conclusion }}</p>
             </div>
           </div>
-          {% endif %}
+        </div>
+        {% endif %}
 
-          <!-- Google Results -->
-          {% if serp_data %}
-          <div class="mb-4">
-            <h3 class="h5 mb-3 text-primary">Google Results</h3>
-            {% for kw, data in serp_data.items() %}
-            <div class="card mb-3">
-              <div class="card-header">
-                <h4 class="h6 mb-0">{{ kw }}</h4>
+        <!-- SEO Elements -->
+        {% if content_brief.seo_elements %}
+        <div class="mb-8">
+          <h3 class="text-2xl font-semibold mb-4 text-primary-600 border-b pb-2">SEO Elements</h3>
+          <div class="bg-gray-50 rounded-lg p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h4 class="font-semibold text-gray-700 mb-2">Search Intent</h4>
+                <p class="text-gray-800">{{ content_brief.seo_elements.search_intent }}</p>
               </div>
-              <div class="card-body">
-                <div class="list-group mb-3">
-                  {% for result in data.serp_results %}
-                  <div class="list-group-item">
-                    <a href="{{ result.url }}" target="_blank" class="text-decoration-none">
-                      <h5 class="h6 mb-1">{{ result.title }}</h5>
-                    </a>
-                    <p class="mb-1 small">{{ result.description }}</p>
-                    <small class="text-muted">{{ result.url }}</small>
-                  </div>
-                  {% endfor %}
-                </div>
+              <div>
+                <h4 class="font-semibold text-gray-700 mb-2">Word Count</h4>
+                <p class="text-gray-800">{{ content_brief.seo_elements.word_count }}</p>
+              </div>
+            </div>
+            
+            {% if content_brief.seo_elements.target_keywords %}
+            <div class="mt-6">
+              <h4 class="font-semibold text-gray-700 mb-3">Target Keywords</h4>
+              <div class="flex flex-wrap gap-2">
+                {% for keyword in content_brief.seo_elements.target_keywords %}
+                <span class="bg-primary-100 text-primary-800 px-3 py-1 rounded-full text-sm font-medium">{{ keyword }}</span>
+                {% endfor %}
+              </div>
+            </div>
+            {% endif %}
 
-                {% if data.related_searches %}
-                <div class="mb-3">
-                  <h5 class="h6 mb-2">Related Searches</h5>
-                  <div class="d-flex flex-wrap gap-2">
-                    {% for search in data.related_searches %}
-                    <span class="badge bg-light text-dark">{{ search.query }}</span>
-                    {% endfor %}
-                  </div>
-                </div>
-                {% endif %}
+            {% if content_brief.seo_elements.internal_linking_opportunities %}
+            <div class="mt-6">
+              <h4 class="font-semibold text-gray-700 mb-3">Internal Linking Opportunities</h4>
+              <ul class="list-disc ml-6 space-y-1">
+                {% for link in content_brief.seo_elements.internal_linking_opportunities %}
+                <li class="text-gray-800">{{ link }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+            {% endif %}
 
-                {% if data.related_questions %}
-                <div>
-                  <h5 class="h6 mb-2">Related Questions</h5>
-                  <ul class="list-unstyled">
-                    {% for question in data.related_questions %}
-                    <li class="mb-2">• {{ question.question }}</li>
-                    {% endfor %}
-                  </ul>
-                </div>
-                {% endif %}
+            {% if content_brief.seo_elements.external_linking_opportunities %}
+            <div class="mt-6">
+              <h4 class="font-semibold text-gray-700 mb-3">External Linking Opportunities</h4>
+              <ul class="list-disc ml-6 space-y-1">
+                {% for link in content_brief.seo_elements.external_linking_opportunities %}
+                <li class="text-gray-800">{{ link }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Content Guidelines -->
+        {% if content_brief.content_guidelines %}
+        <div class="mb-8">
+          <h3 class="text-2xl font-semibold mb-4 text-primary-600 border-b pb-2">Content Guidelines</h3>
+          <div class="bg-gray-50 rounded-lg p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h4 class="font-semibold text-gray-700 mb-2">Tone</h4>
+                <p class="text-gray-800">{{ content_brief.content_guidelines.tone }}</p>
+              </div>
+              <div>
+                <h4 class="font-semibold text-gray-700 mb-2">Style</h4>
+                <p class="text-gray-800">{{ content_brief.content_guidelines.style }}</p>
+              </div>
+            </div>
+            
+            {% if content_brief.content_guidelines.format %}
+            <div class="mt-6">
+              <h4 class="font-semibold text-gray-700 mb-2">Format</h4>
+              <p class="text-gray-800">{{ content_brief.content_guidelines.format }}</p>
+            </div>
+            {% endif %}
+            
+            {% if content_brief.content_guidelines.unique_selling_points %}
+            <div class="mt-6">
+              <h4 class="font-semibold text-gray-700 mb-3">Unique Selling Points</h4>
+              <ul class="list-disc ml-6 space-y-1">
+                {% for usp in content_brief.content_guidelines.unique_selling_points %}
+                <li class="text-gray-800">{{ usp }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        {% endif %}
+      {% endif %}
+
+      <!-- Research Data Section -->
+      {% if research_data %}
+        <!-- Brand Profile -->
+        {% if research_data.website_summary %}
+        <div class="mb-8">
+          <h3 class="text-2xl font-semibold mb-4 text-primary-600 border-b pb-2">Brand Profile</h3>
+          <div class="bg-gray-50 rounded-lg p-6">
+            <div class="prose max-w-none">
+              {{ research_data.website_summary|safe }}
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Keyword Information -->
+        {% if research_data.keyword_info %}
+        <div class="mb-8">
+          <h3 class="text-2xl font-semibold mb-4 text-primary-600 border-b pb-2">Keyword Research</h3>
+          <div class="bg-gray-50 rounded-lg p-6">
+            <div class="prose max-w-none">
+              {{ research_data.keyword_info|safe }}
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Reddit Insights -->
+        {% if research_data.reddit_summaries %}
+        <div class="mb-8">
+          <h3 class="text-2xl font-semibold mb-4 text-primary-600 border-b pb-2">Reddit Insights</h3>
+          <div class="space-y-4">
+            {% for topic, summary in research_data.reddit_summaries.items() %}
+            <div class="bg-gray-50 rounded-lg p-6">
+              <h6 class="font-semibold mb-3 text-gray-700 text-lg">{{ topic }}</h6>
+              <div class="prose prose-sm max-w-none prose-headings:text-gray-800 prose-headings:font-semibold prose-p:text-gray-700 prose-p:leading-relaxed prose-strong:text-gray-900 prose-strong:font-semibold prose-ul:text-gray-700 prose-li:text-gray-700 prose-li:leading-relaxed prose-h3:text-lg prose-h4:text-base">
+                {{ summary|markdown|safe }}
               </div>
             </div>
             {% endfor %}
           </div>
-          {% endif %}
         </div>
-      </div>
+        {% endif %}
+
+        <!-- Google Results -->
+        {% if research_data.serp_data %}
+        <div class="mb-8">
+          <h3 class="text-2xl font-semibold mb-4 text-primary-600 border-b pb-2">Google Results</h3>
+          {% for kw, data in research_data.serp_data.items() %}
+          <div class="bg-white rounded-lg shadow-sm mb-6 border">
+            <div class="border-b px-6 py-4 bg-gray-50">
+              <h4 class="text-lg font-semibold text-gray-700">{{ kw }}</h4>
+            </div>
+            <div class="p-6">
+              <div class="space-y-4 mb-6">
+                {% for result in data.serp_results %}
+                <div class="border-b pb-4 last:border-b-0 last:pb-0">
+                  <a href="{{ result.url }}" target="_blank" class="text-primary-600 hover:text-primary-700">
+                    <h5 class="text-base font-medium mb-1">{{ result.title }}</h5>
+                  </a>
+                  <p class="text-sm text-gray-600 mb-1">{{ result.description }}</p>
+                  <small class="text-gray-500">{{ result.url }}</small>
+                </div>
+                {% endfor %}
+              </div>
+
+              {% if data.related_searches %}
+              <div class="mb-6">
+                <h5 class="text-base font-semibold mb-3 text-gray-700">Related Searches</h5>
+                <div class="flex flex-wrap gap-2">
+                  {% for search in data.related_searches %}
+                  <span class="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm">{{ search.query }}</span>
+                  {% endfor %}
+                </div>
+              </div>
+              {% endif %}
+
+              {% if data.related_questions %}
+              <div>
+                <h5 class="text-base font-semibold mb-3 text-gray-700">Related Questions</h5>
+                <ul class="list-disc ml-6 space-y-1">
+                  {% for question in data.related_questions %}
+                  <li class="text-gray-800">{{ question.question }}</li>
+                  {% endfor %}
+                </ul>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      {% endif %}
     </div>
   </div>
 </div>

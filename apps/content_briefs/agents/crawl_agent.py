@@ -39,14 +39,28 @@ class CrawlAgent:
             print(f"CrawlAgent summarize_website error: {e}")
             return f"Summary of {url}"
 
-    def extract_headings(self, url):
+    def extract_headings(self, url): #limit to 10 headings
         try:
             print(f"Fetching: {url}")
             resp = requests.get(url, headers=BROWSER_HEADERS, timeout=10)
             print(f"Status code: {resp.status_code}")
             soup = BeautifulSoup(resp.text, 'html.parser')
-            h1 = [h.get_text(strip=True) for h in soup.find_all('h1')]
-            h2 = [h.get_text(strip=True) for h in soup.find_all('h2')]
+            
+            # Get all headings
+            h1_tags = soup.find_all('h1')
+            h2_tags = soup.find_all('h2')
+            
+            # Combine all headings into a single list of tuples (text, type)
+            all_headings = [(h.get_text(strip=True), 'h1') for h in h1_tags] + \
+                         [(h.get_text(strip=True), 'h2') for h in h2_tags]
+            
+            # Take only the first 10 headings
+            limited_headings = all_headings[:10]
+            
+            # Separate back into h1 and h2 lists
+            h1 = [text for text, tag_type in limited_headings if tag_type == 'h1']
+            h2 = [text for text, tag_type in limited_headings if tag_type == 'h2']
+            
             print(f"H1: {h1}")
             print(f"H2: {h2}")
             return {"h1": h1, "h2": h2}

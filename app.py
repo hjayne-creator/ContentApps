@@ -3,6 +3,7 @@ from markupsafe import Markup
 from apps.content_plan.config import get_config
 from extensions import csrf, db
 import markdown
+import json
 
 def create_app():
     app = Flask(__name__, static_folder='apps/static')
@@ -39,6 +40,19 @@ def create_app():
     @app.template_filter('markdown')
     def markdown_filter(text):
         return Markup(markdown.markdown(text or ""))
+    
+    # JSON filter for Jinja2
+    @app.template_filter('from_json')
+    def from_json_filter(text):
+        try:
+            return json.loads(text)
+        except (json.JSONDecodeError, TypeError):
+            return {}
+    
+    # Type filter for Jinja2
+    @app.template_filter('type')
+    def type_filter(value):
+        return type(value).__name__
     
     app.jinja_env.filters['format_reddit_summary'] = format_reddit_summary
     
