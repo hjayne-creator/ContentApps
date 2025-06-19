@@ -1,0 +1,119 @@
+# ContentApps Cursor Rules
+
+## Project Structure
+- This is a Flask application with multiple content management apps
+- Each app in the `apps/` directory is a separate Flask blueprint
+- Use SQLAlchemy for database models
+- Follow Flask application factory pattern
+- Main app configuration is in `config.py` and `app.py`
+- Use Celery for background task processing
+
+## Code Style
+- Use Python 3.8+ syntax
+- Follow PEP 8 for Python code formatting
+- Use type hints where appropriate
+- Prefer f-strings over .format() or %
+- Use snake_case for variables and functions
+- Use PascalCase for classes
+- Keep line length under 88 characters
+
+## Flask Conventions
+- Blueprint routes should be prefixed with the app name
+- Use Flask-SQLAlchemy for database operations
+- Template files go in `templates/` directory within each app
+- Static files go in `static/` directory within each app
+- Use Flask-WTF for forms
+- Register blueprints in the main app factory
+
+## Database
+- Use SQLAlchemy ORM
+- Define models in `models.py` files within each app
+- Use Alembic for database migrations
+- Follow naming conventions: table names in snake_case
+- Include proper relationships and foreign keys
+
+## Frontend
+- Use Bootstrap or Tailwind CSS for styling
+- Keep JavaScript in separate files under `static/js/`
+- Use Jinja2 templating syntax
+- Prefer semantic HTML elements
+- Use responsive design principles
+
+## API Design
+- Use RESTful conventions for API endpoints
+- Return JSON responses for API calls
+- Include proper HTTP status codes
+- Use descriptive endpoint names
+- Implement proper error handling
+
+## Testing
+- Write unit tests for models and utilities
+- Use pytest for testing framework
+- Test files should be in `tests/` directories within each app
+- Mock external API calls in tests
+- Test both success and error scenarios
+
+## Security
+- Use CSRF protection for forms
+- Validate and sanitize user input
+- Use environment variables for sensitive data
+- Implement proper authentication and authorization
+- Never commit API keys or secrets to version control
+
+## Performance
+- Use Celery for background tasks
+- Implement caching where appropriate
+- Optimize database queries
+- Use connection pooling for database connections
+- Minimize database queries in loops
+
+## Documentation
+- Include docstrings for functions and classes
+- Use clear, descriptive variable names
+- Comment complex business logic
+- Keep README files updated
+- Document API endpoints
+
+## File Organization
+- Keep related files together in app directories
+- Use `__init__.py` files for package initialization
+- Separate concerns: routes, models, templates, static files
+- Use consistent file naming conventions
+- Group related functionality in subdirectories (agents, tasks, utils)
+
+## Task Processing
+- Use Celery for long-running tasks
+- Implement proper task queuing and monitoring
+- Handle task failures gracefully
+- Use task status tracking for user feedback
+- Implement task retry logic where appropriate
+
+## Configuration
+- Use environment variables for configuration
+- Separate development, testing, and production configs
+- Use Flask's config system properly
+- Keep sensitive data out of version control
+- Use .env files for local development
+
+## Error Handling
+- Implement proper exception handling
+- Log errors appropriately
+- Provide user-friendly error messages
+- Use Flask's error handlers for HTTP errors
+- Handle external API failures gracefully
+
+## Code Quality
+- Use linting tools (flake8, black)
+- Write self-documenting code
+- Avoid code duplication
+- Use meaningful variable and function names
+- Keep functions small and focused 
+
+## Apps External API Services
+- OpenAI
+- SerpAPI
+- Reddit
+
+## Environments
+- Development: Local (Mac M3)
+- Production: Render (render.com)

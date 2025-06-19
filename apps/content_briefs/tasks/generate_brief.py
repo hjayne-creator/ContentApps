@@ -71,13 +71,33 @@ def generate_brief_task(self, keyword, website):
         "keyword_info": keyword_info,
         "website_url": website
     }
-    research_path = os.path.join(BRIEFS_DIR, f'research_{task_id}.json')
-    with open(research_path, 'w') as f:
-        json.dump(result_data, f, indent=2)
+    
+    try:
+        research_path = os.path.join(BRIEFS_DIR, f'research_{task_id}.json')
+        print(f"Attempting to save research to: {research_path}")
+        print(f"BRIEFS_DIR: {BRIEFS_DIR}")
+        print(f"Directory exists: {os.path.exists(BRIEFS_DIR)}")
+        print(f"Directory is writable: {os.access(BRIEFS_DIR, os.W_OK)}")
+        with open(research_path, 'w') as f:
+            json.dump(result_data, f, indent=2)
+        print(f"Research file saved successfully")
+    except Exception as e:
+        print(f"Error saving research file: {e}")
+        import traceback
+        traceback.print_exc()
+        raise
     
     # Save final brief
-    brief_path = os.path.join(BRIEFS_DIR, f'brief_{task_id}.json')
-    with open(brief_path, 'w') as f:
-        json.dump(brief, f, indent=2)
+    try:
+        brief_path = os.path.join(BRIEFS_DIR, f'brief_{task_id}.json')
+        print(f"Attempting to save brief to: {brief_path}")
+        with open(brief_path, 'w') as f:
+            json.dump(brief, f, indent=2)
+        print(f"Brief file saved successfully")
+    except Exception as e:
+        print(f"Error saving brief file: {e}")
+        import traceback
+        traceback.print_exc()
+        raise
 
     return {'result': f'Brief generated!', 'brief_path': brief_path, 'research_path': research_path} 
