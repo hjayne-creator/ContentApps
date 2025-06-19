@@ -1,0 +1,1 @@
+# Content Briefs Flask Blueprint
